@@ -5,8 +5,8 @@ pnd:
   home:
   data:
     dir:
-  useMysql: true
+  useMysql: false
   mysql:
-    url: jdbc:mysql://localhost:3306/pnd
+    url: jdbc:mysql://localhost:3306/pnd_test
     username: root
     password: 123456

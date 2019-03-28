@@ -57,8 +57,8 @@ public class DatabaseInitialization {
         }
     }
 
-    private static final String SQL_FILE_NAME = "schema.sql";
-    private static final String MYSQL_SQL_FILE_NAME = "schema-mysql.sql";
+    private static final String SQL_FILE_NAME = "META-INFO" + File.separator + "schema.sql";
+    private static final String MYSQL_SQL_FILE_NAME = "META-INFO" + File.separator + "schema-mysql.sql";
     private List<String> loadSql() throws Exception {
         List<String> sqlList = new ArrayList<>();
         InputStream inputStream = null;
@@ -67,7 +67,7 @@ public class DatabaseInitialization {
             if (properties.isUseMysql()){
                 sqlFileName = MYSQL_SQL_FILE_NAME;
             }
-            if (StringUtils.isBlank(properties.getPndHome())) {
+            if (Properties.DEFAULT_PND_HOME.equals(properties.getPndHome())) {
                 ClassLoader classLoader = getClass().getClassLoader();
                 URL url = classLoader.getResource(sqlFileName);
                 inputStream = url.openStream();

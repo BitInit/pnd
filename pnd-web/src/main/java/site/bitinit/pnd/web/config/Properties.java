@@ -15,6 +15,9 @@ import java.io.File;
  */
 @Configuration
 public class Properties {
+
+    public static final String DEFAULT_PND_HOME = getSystemProperty("user.home", "") + File.separator + "pnd";
+
     private String pndHome;
     private String dataDir;
     private boolean isUseMysql;
@@ -36,7 +39,7 @@ public class Properties {
     @PostConstruct
     public void init(){
         // environment properties
-        setPndHome(getEnvProperty(EnvironmentConstants.PND_HOME, ""));
+        setPndHome(getEnvProperty(EnvironmentConstants.PND_HOME, DEFAULT_PND_HOME));
         setDataDir(getEnvProperty(EnvironmentConstants.PND_DATA_DIR, ""));
         setUseMysql(getEnvProperty(EnvironmentConstants.IS_USE_MYSQL, "false"));
         setDbURL(env.getProperty(EnvironmentConstants.DB_URL));
@@ -163,7 +166,7 @@ public class Properties {
         return val;
     }
 
-    private String getSystemProperty(String key, String defultVal){
+    private static String getSystemProperty(String key, String defultVal){
         String val = System.getProperty(key, "");
         if (StringUtils.isBlank(val)){
             return defultVal;
