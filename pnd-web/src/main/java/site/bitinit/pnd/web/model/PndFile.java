@@ -1,26 +1,25 @@
 package site.bitinit.pnd.web.model;
 
-import java.util.Date;
 import java.util.Objects;
 
 /**
  * @author: john
  * @date: 2019/3/28
  */
-public class File {
-    private Integer id;
+public class PndFile {
+    private Long id;
     private String name;
-    private Integer parentId;
+    private Long parentId;
     private String type;
-    private Date gmtCreate;
-    private Date gmtModified;
-    private Integer resourceId;
+    private Long gmtCreate;
+    private Long gmtModified;
+    private Long resourceId;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -32,11 +31,11 @@ public class File {
         this.name = name;
     }
 
-    public Integer getParentId() {
+    public Long getParentId() {
         return parentId;
     }
 
-    public void setParentId(Integer parentId) {
+    public void setParentId(Long parentId) {
         this.parentId = parentId;
     }
 
@@ -48,27 +47,27 @@ public class File {
         this.type = type;
     }
 
-    public Date getGmtCreate() {
+    public Long getGmtCreate() {
         return gmtCreate;
     }
 
-    public void setGmtCreate(Date gmtCreate) {
+    public void setGmtCreate(Long gmtCreate) {
         this.gmtCreate = gmtCreate;
     }
 
-    public Date getGmtModified() {
+    public Long getGmtModified() {
         return gmtModified;
     }
 
-    public void setGmtModified(Date gmtModified) {
+    public void setGmtModified(Long gmtModified) {
         this.gmtModified = gmtModified;
     }
 
-    public Integer getResourceId() {
+    public Long getResourceId() {
         return resourceId;
     }
 
-    public void setResourceId(Integer resourceId) {
+    public void setResourceId(Long resourceId) {
         this.resourceId = resourceId;
     }
 
@@ -80,8 +79,8 @@ public class File {
         if (o == null || getClass() != o.getClass()){
             return false;
         }
-        File file = (File) o;
-        return id == file.id;
+        PndFile file = (PndFile) o;
+        return Objects.equals(id, file.id);
     }
 
     @Override

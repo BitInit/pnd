@@ -1,35 +1,34 @@
 package site.bitinit.pnd.web.model;
 
-import java.util.Date;
 import java.util.Objects;
 
 /**
  * @author: john
  * @date: 2019/3/28
  */
-public class Resource {
-    private Integer id;
-    private Integer size;
+public class PndResource {
+    private Long id;
+    private Long size;
     private String path;
     private String uuid;
     private String md5;
     private String status;
-    private Date gmtCreate;
-    private Date gmtModified;
+    private Long gmtCreate;
+    private Long gmtModified;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Integer getSize() {
+    public Long getSize() {
         return size;
     }
 
-    public void setSize(Integer size) {
+    public void setSize(Long size) {
         this.size = size;
     }
 
@@ -65,19 +64,19 @@ public class Resource {
         this.status = status;
     }
 
-    public Date getGmtCreate() {
+    public Long getGmtCreate() {
         return gmtCreate;
     }
 
-    public void setGmtCreate(Date gmtCreate) {
+    public void setGmtCreate(Long gmtCreate) {
         this.gmtCreate = gmtCreate;
     }
 
-    public Date getGmtModified() {
+    public Long getGmtModified() {
         return gmtModified;
     }
 
-    public void setGmtModified(Date gmtModified) {
+    public void setGmtModified(Long gmtModified) {
         this.gmtModified = gmtModified;
     }
 
@@ -89,7 +88,7 @@ public class Resource {
         if (o == null || getClass() != o.getClass()){
             return false;
         }
-        Resource resource = (Resource) o;
+        PndResource resource = (PndResource) o;
         return Objects.equals(id, resource.id);
     }
 

@@ -6,6 +6,8 @@ package site.bitinit.pnd.common.util;
  */
 public class StringUtils {
 
+    public static final String EMPTY = "";
+
     public static boolean isBlank(String str) {
         int strLen;
         if (str == null || (strLen = str.length()) == 0) {
