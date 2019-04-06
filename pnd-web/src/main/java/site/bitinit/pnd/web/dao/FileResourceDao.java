@@ -33,8 +33,7 @@ public class FileResourceDao {
                 + " as f left join " + ResourceDao.RESOURCE_TABLE_NAME
                 + " as r on f.resource_id = r.id where f.parent_id = ?";
 
-        System.out.println(sql);
-        logger.info("[db query] {}", sql);
+        logger.info("[db query] parent_id-{} {}", parentId, sql);
         return daoUtils.queryForList(sql, FILE_RESOURCE_ROW_MAPPER, parentId);
     }
 

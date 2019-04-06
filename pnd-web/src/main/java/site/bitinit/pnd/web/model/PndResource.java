@@ -15,6 +15,7 @@ public class PndResource {
     private String status;
     private Long gmtCreate;
     private Long gmtModified;
+    private Integer link;
 
     public Long getId() {
         return id;
@@ -78,6 +79,14 @@ public class PndResource {
 
     public void setGmtModified(Long gmtModified) {
         this.gmtModified = gmtModified;
+    }
+
+    public Integer getLink() {
+        return link;
+    }
+
+    public void setLink(Integer link) {
+        this.link = link;
     }
 
     @Override

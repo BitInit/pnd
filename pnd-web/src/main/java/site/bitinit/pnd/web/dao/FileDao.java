@@ -8,6 +8,8 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import site.bitinit.pnd.common.util.CommonUtils;
+import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.model.PndFile;
 
 import java.sql.ResultSet;
@@ -27,19 +29,38 @@ public class FileDao {
     private DaoUtils daoUtils;
     public PndFile findById(long id){
         String sql = "select" + FILE_ALL_FIELDS + "from" + FILE_TABLE_NAME + "where id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, new Object[]{id}, FILE_ROW_MAPPER);
-        } catch (CannotGetJdbcConnectionException e){
-            logger.error("[db-error] ", e);
-            throw e;
-        } catch (EmptyResultDataAccessException e){
-            return null;
-        }
+        return daoUtils.queryForObject(sql, FILE_ROW_MAPPER, id);
     }
 
     public List<PndFile> findByParentId(long parentId){
         String sql = "select" + FILE_ALL_FIELDS + "from" + FILE_TABLE_NAME + "where parent_id = ?";
         return daoUtils.queryForList(sql, FILE_ROW_MAPPER, parentId);
+    }
+
+    public List<PndFile> findByParentIdSortByGmtModified(long parentId){
+        String sql = "select" + FILE_ALL_FIELDS + "from" + FILE_TABLE_NAME + "where parent_id = ? order by gmt_modified";
+        return daoUtils.queryForList(sql, FILE_ROW_MAPPER, parentId);
+    }
+
+    public void save(long parentId, String name){
+        String sql = "insert into " + FILE_TABLE_NAME + "(name, parent_id, type, gmt_create, gmt_modified) values "
+                    + "(?, ?, ?, ?, ?)";
+        String datetime = CommonUtils.formatDate();
+        logger.info("[db insert] parent_id-{} folder_name-{} {}", parentId, name, sql);
+        jdbcTemplate.update(sql, name, parentId, SystemConstants.FileType.FOLDER.toString(),
+                datetime, datetime);
+    }
+
+    public void renameFile(long id, String fileName){
+        String sql = "update " + FILE_TABLE_NAME + "set name = ?, gmt_modified = ? where id = ?";
+        logger.info("[db update] id-{} file_name-{} {}", id, fileName, sql);
+        jdbcTemplate.update(sql, fileName, CommonUtils.formatDate(), id);
+    }
+
+    public void deleteFile(long id){
+        String sql = "delete from " + FILE_TABLE_NAME + "where id = ?";
+        logger.info("[db delete] id-{} {}", id, sql);
+        jdbcTemplate.update(sql, id);
     }
 
     public static final String FILE_TABLE_NAME = " pnd_file ";

@@ -23,6 +23,17 @@ public class DaoUtils {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public <T> T queryForObject(String sql, RowMapper rowMapper, Object... objects){
+        try {
+            return (T) jdbcTemplate.queryForObject(sql, objects, rowMapper);
+        } catch (CannotGetJdbcConnectionException e){
+            logger.error("[db-error] ", e);
+            throw e;
+        } catch (EmptyResultDataAccessException e){
+            return null;
+        }
+    }
+
     public <T> List<T> queryForList(String sql, RowMapper rowMapper, Object... objects){
         try {
             return jdbcTemplate.query(sql, objects, rowMapper);

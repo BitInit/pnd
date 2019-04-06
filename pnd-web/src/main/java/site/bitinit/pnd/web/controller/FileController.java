@@ -1,11 +1,10 @@
 package site.bitinit.pnd.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import site.bitinit.pnd.common.ResponseEntity;
+import site.bitinit.pnd.common.util.Assert;
 import site.bitinit.pnd.common.util.ResponseUtils;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.FileDetailDto;
@@ -27,5 +26,22 @@ public class FileController {
     public ResponseEntity<List<FileDetailDto>> getFileList(@RequestParam(defaultValue = "0") long parentId){
         List<FileDetailDto> list = fileService.getFileList(parentId);
         return ResponseUtils.ok(list);
+    }
+
+    @PostMapping("/file")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createFile(@RequestParam(defaultValue = "0") long parentId,
+                           String folderName){
+        fileService.createFolder(parentId, folderName);
+    }
+
+    @PutMapping("/file/{id}")
+    public void renameFile(@PathVariable("id") long id, String fileName){
+        fileService.renameFile(id, fileName);
+    }
+
+    @DeleteMapping("/file/{id}")
+    public void deleteFile(@PathVariable("id") long id){
+        fileService.deleteFile(id);
     }
 }

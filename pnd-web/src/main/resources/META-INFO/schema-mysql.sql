@@ -18,11 +18,12 @@ CREATE TABLE IF NOT EXISTS `pnd_file` (
 CREATE TABLE IF NOT EXISTS `pnd_resource` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `size` int(11) DEFAULT '0',
-  `path` varchar(255) DEFAULT NULL,
-  `uuid` varchar(255) DEFAULT NULL,
+  `path` varchar(255) NOT NULL,
+  `uuid` varchar(255) NOT NULL,
   `gmt_create` datetime DEFAULT '2019-01-01 00:00:00',
-  `status` varchar(45) DEFAULT NULL COMMENT '资源状态，表示是否完整等',
-  `md5` varchar(32) DEFAULT NULL,
+  `status` varchar(45) NOT NULL COMMENT '资源状态，表示是否完整等',
+  `md5` varchar(32) NOT NULL,
   `gmt_modified` datetime DEFAULT '2019-01-01 00:00:00',
+  `link` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

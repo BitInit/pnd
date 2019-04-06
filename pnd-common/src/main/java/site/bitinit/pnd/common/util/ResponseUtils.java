@@ -30,6 +30,14 @@ public class ResponseUtils {
         return new ResponseEntity<>(BAD_REQUEST, msg, data);
     }
 
+    public static <T> ResponseEntity<T> notFound(String msg){
+        return notFound(msg, null);
+    }
+
+    public static <T> ResponseEntity<T> notFound(String msg, T data){
+        return new ResponseEntity<>(NOT_FOUND, msg, data);
+    }
+
     public static <T> ResponseEntity<T> serverError(String msg){
         return serverError(msg, null);
     }

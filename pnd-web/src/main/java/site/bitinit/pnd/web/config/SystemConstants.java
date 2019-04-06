@@ -11,7 +11,7 @@ public class SystemConstants {
     /**
      * 系统文件类型
      */
-    enum FileType{
+    public enum FileType{
         DEFAULT, FOLDER, PDF, COMPRESS_FILE, VIDEO, PICTURE;
 
         @Override

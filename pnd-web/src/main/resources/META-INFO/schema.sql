@@ -21,4 +21,5 @@ CREATE TABLE pnd_resource (
   gmt_create timestamp NOT NULL DEFAULT '2019-01-01 00:00:00',
   status varchar(45),
   md5 varchar(32),
+  link int DEFAULT 0,
   constraint pnd_resource_id_key PRIMARY KEY (id));

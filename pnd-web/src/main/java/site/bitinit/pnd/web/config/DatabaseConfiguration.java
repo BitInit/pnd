@@ -3,10 +3,12 @@ package site.bitinit.pnd.web.config;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import site.bitinit.pnd.common.util.StringUtils;
 
 import javax.sql.DataSource;
@@ -42,10 +44,12 @@ public class DatabaseConfiguration {
     }
 
     @Bean
-    public PlatformTransactionManager buildTransactionManager(DataSource dataSource){
+    public TransactionTemplate transactionTemplate(DataSource dataSource){
         DataSourceTransactionManager tm = new DataSourceTransactionManager();
         tm.setDataSource(dataSource);
-        return tm;
+        TransactionTemplate transactionTemplate = new TransactionTemplate(tm);
+        transactionTemplate.setTimeout(5000);
+        return transactionTemplate;
     }
 
     private static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver";
