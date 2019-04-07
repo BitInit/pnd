@@ -40,8 +40,18 @@ public class FileController {
         fileService.renameFile(id, fileName);
     }
 
+    @PutMapping("/file/{id}/move/{targetId}")
+    public void moveFile(@PathVariable("id") long id, @PathVariable("targetId") long targetId){
+        fileService.moveFile(id, targetId);
+    }
+
     @DeleteMapping("/file/{id}")
     public void deleteFile(@PathVariable("id") long id){
         fileService.deleteFile(id);
+    }
+
+    @GetMapping("/file/{id}/subfolder")
+    public ResponseEntity getSubfolder(@PathVariable(value = "id") long id){
+        return ResponseUtils.ok(fileService.getSubfolder(id));
     }
 }

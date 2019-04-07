@@ -42,6 +42,13 @@ public class FileDao {
         return daoUtils.queryForList(sql, FILE_ROW_MAPPER, parentId);
     }
 
+    public List<PndFile> findSubfolderByParentId(long id){
+        String sql = "select" + FILE_ALL_FIELDS + "from" + FILE_TABLE_NAME +
+                "where parent_id = ? and type = ?";
+        logger.info("[file query] id-{} {}", id, sql);
+        return daoUtils.queryForList(sql, FILE_ROW_MAPPER, id, SystemConstants.FileType.FOLDER.toString());
+    }
+
     public void save(long parentId, String name){
         String sql = "insert into " + FILE_TABLE_NAME + "(name, parent_id, type, gmt_create, gmt_modified) values "
                     + "(?, ?, ?, ?, ?)";
@@ -61,6 +68,12 @@ public class FileDao {
         String sql = "delete from " + FILE_TABLE_NAME + "where id = ?";
         logger.info("[db delete] id-{} {}", id, sql);
         jdbcTemplate.update(sql, id);
+    }
+
+    public void moveFile(long id, long targetId){
+        String sql = "update " + FILE_TABLE_NAME + " set parent_id = ?, gmt_modified = ? where id = ?";
+        logger.info("[file update] id-{} targetId-{} {}", id, targetId, sql);
+        jdbcTemplate.update(sql, targetId, CommonUtils.formatDate(), id);
     }
 
     public static final String FILE_TABLE_NAME = " pnd_file ";

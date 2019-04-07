@@ -37,4 +37,18 @@ public interface FileService {
      * @param id
      */
     void deleteFile(long id);
+
+    /**
+     * 获取子文件夹
+     * @param id
+     * @return
+     */
+    List<PndFile> getSubfolder(long id);
+
+    /**
+     * 移动文件
+     * @param id
+     * @param targetId
+     */
+    void moveFile(long id, long targetId);
 }

@@ -1,5 +1,7 @@
 package site.bitinit.pnd.web.model;
 
+import site.bitinit.pnd.web.config.SystemConstants;
+
 import java.util.Objects;
 
 /**
@@ -14,6 +16,16 @@ public class PndFile {
     private Long gmtCreate;
     private Long gmtModified;
     private Long resourceId;
+
+    public PndFile() {
+    }
+
+    public PndFile(Long id, String name, Long parentId, String type) {
+        this.id = id;
+        this.name = name;
+        this.parentId = parentId;
+        this.type = type;
+    }
 
     public Long getId() {
         return id;
@@ -87,4 +99,6 @@ public class PndFile {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    public static final PndFile ROOT_PND_FILE = new PndFile(0L, "全部文件", 0L, SystemConstants.FileType.FOLDER.toString());
 }
