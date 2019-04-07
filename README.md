@@ -20,6 +20,9 @@ cd pnd
 mvn clean package
 
 # "${PND_HOME}/pnd/pnd-distribution/target" 下可看到构建好的 *.tar.gz 和 *.zip 包
+
+# 运行系统
+bin/startup.sh
 ```
 
 ### 直接下载安装包

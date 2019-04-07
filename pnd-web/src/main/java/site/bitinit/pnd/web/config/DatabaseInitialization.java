@@ -75,6 +75,7 @@ public class DatabaseInitialization {
                 File file = new File(
                         properties.getPndHome() + File.separator + "conf" + File.separator + sqlFileName);
                 inputStream = new FileInputStream(file);
+                logger.info("load sql: {}", file.getAbsolutePath());
             }
 
             StringBuffer sqlSb = new StringBuffer();
