@@ -4,10 +4,10 @@
 前端页面：[https://github.com/BitInit/pnd-web](https://github.com/BitInit/pnd-web)
 
 ## 功能
-- [ ] 文件及文件夹管理
-- [ ] 文件的上传与下载
-- [ ] 远程资源后台下载
+- [x] 文件及文件夹：增/删/改/移动/复制
+- [ ] 文件的上传与下载 开发中...
 - [ ] 影视在线观看
+- [ ] 远程资源后台下载
 - [ ] ......
 
 ## 下载源码或安装包
@@ -19,9 +19,8 @@ git clone https://github.com/BitInit/pnd.git
 cd pnd
 mvn clean package
 
-# "${PND_HOME}/pnd/pnd-distribution/target" 下可看到构建好的 *.tar.gz 和 *.zip 包
-
-# 运行系统
+# pnd/pnd-distribution/target" 下可看到构建好的 *.tar.gz 和 *.zip 包
+# 运行
 bin/startup.sh
 ```
 

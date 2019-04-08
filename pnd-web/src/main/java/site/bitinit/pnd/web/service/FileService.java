@@ -51,4 +51,11 @@ public interface FileService {
      * @param targetId
      */
     void moveFile(long id, long targetId);
+
+    /**
+     * 复制文件
+     * @param id
+     * @param targetIds
+     */
+    void copyFile(long id, Long[] targetIds);
 }

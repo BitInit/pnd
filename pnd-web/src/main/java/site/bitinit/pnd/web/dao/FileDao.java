@@ -49,13 +49,22 @@ public class FileDao {
         return daoUtils.queryForList(sql, FILE_ROW_MAPPER, id, SystemConstants.FileType.FOLDER.toString());
     }
 
-    public void save(long parentId, String name){
+    public void createFolder(long parentId, String name){
         String sql = "insert into " + FILE_TABLE_NAME + "(name, parent_id, type, gmt_create, gmt_modified) values "
                     + "(?, ?, ?, ?, ?)";
         String datetime = CommonUtils.formatDate();
         logger.info("[db insert] parent_id-{} folder_name-{} {}", parentId, name, sql);
         jdbcTemplate.update(sql, name, parentId, SystemConstants.FileType.FOLDER.toString(),
                 datetime, datetime);
+    }
+
+    public void save(PndFile file){
+        String sql = "insert into " + FILE_TABLE_NAME + "(name, parent_id, type, gmt_create, gmt_modified, resource_id) values "
+                + "(?, ?, ?, ?, ?, ?)";
+        String datetime = CommonUtils.formatDate();
+        logger.info("[db insert] {}", sql);
+        jdbcTemplate.update(sql, file.getName(), file.getParentId(), file.getType(),
+                datetime, datetime, file.getResourceId());
     }
 
     public void renameFile(long id, String fileName){

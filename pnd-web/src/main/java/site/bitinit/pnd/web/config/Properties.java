@@ -49,7 +49,7 @@ public class Properties {
         setDbMaxActive(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_MAX_ACTIVE, "20")));
         setDbMaxIdle(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_MAX_IDLE, "50")));
 
-        // environment variable
+        // system environment variable
         setPndHome(getSystemProperty(EnvironmentConstants.PND_HOME, getPndHome()));
         setDataDir(getSystemProperty(EnvironmentConstants.PND_DATA_DIR, getDataDir()));
     }

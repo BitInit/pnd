@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.bitinit.pnd.common.ResponseEntity;
-import site.bitinit.pnd.common.util.Assert;
 import site.bitinit.pnd.common.util.ResponseUtils;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.FileDetailDto;
@@ -45,6 +44,11 @@ public class FileController {
         fileService.moveFile(id, targetId);
     }
 
+    @PostMapping("/file/{id}/copy")
+    public void copyFile(@PathVariable("id") long id, @RequestBody Long[] targetIds){
+        fileService.copyFile(id, targetIds);
+    }
+
     @DeleteMapping("/file/{id}")
     public void deleteFile(@PathVariable("id") long id){
         fileService.deleteFile(id);
@@ -54,4 +58,5 @@ public class FileController {
     public ResponseEntity getSubfolder(@PathVariable(value = "id") long id){
         return ResponseUtils.ok(fileService.getSubfolder(id));
     }
+
 }

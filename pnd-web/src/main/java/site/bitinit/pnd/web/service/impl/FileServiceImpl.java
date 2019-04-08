@@ -48,7 +48,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public void createFolder(long parentId, String folderName) {
         Assert.notEmpty(folderName, "文件夹名不能为空");
-        fileDao.save(parentId, folderName);
+        fileDao.createFolder(parentId, folderName);
     }
 
     @Override
@@ -88,10 +88,51 @@ public class FileServiceImpl implements FileService {
         targetFile = targetId != 0? targetFile: PndFile.ROOT_PND_FILE;
 
         if (isChild(id, targetFile)){
-            throw new IllegalDataException("目标文件夹不能为源目录的子目录");
+            throw new IllegalDataException("目标文件夹不能为源文件夹的子目录");
         } else {
             fileDao.moveFile(id, targetId);
         }
+    }
+
+    @Override
+    public void copyFile(long id, Long[] targetIds) {
+        if (Objects.isNull(targetIds) || targetIds.length == 0){
+            throw new IllegalDataException("目标文件夹不能为空");
+        }
+
+        PndFile file = fileDao.findById(id);
+        if (Objects.isNull(file) || SystemConstants.FileType.FOLDER.toString().equals(file.getType())){
+            throw new IllegalDataException("源文件不存在或源文件不能是文件夹");
+        }
+        transactionTemplate.execute(new TransactionCallback<Boolean>() {
+            @Override
+            public Boolean doInTransaction(TransactionStatus transactionStatus) {
+                int num = 0;
+                for (Long targetId: targetIds) {
+                    PndFile targetFile = fileDao.findById(targetId);
+                    if (Objects.isNull(targetFile) || !SystemConstants.FileType.FOLDER.toString().equals(targetFile.getType())){
+                        continue;
+                    }
+
+                    PndFile copyFile = new PndFile();
+                    copyFile.setName(file.getName());
+                    copyFile.setParentId(targetId);
+                    copyFile.setType(file.getType());
+                    copyFile.setResourceId(file.getResourceId());
+                    fileDao.save(copyFile);
+                    num++;
+                }
+
+                final int finalNum = num;
+                updateResourceIndex(file.getResourceId(), new ResourceLinkOperation() {
+                    @Override
+                    public long operation(long originVal) {
+                        return originVal + finalNum;
+                    }
+                });
+                return Boolean.TRUE;
+            }
+        });
     }
 
     /**
@@ -168,26 +209,68 @@ public class FileServiceImpl implements FileService {
 
         fileDao.deleteFile(file.getId());
         int i = 0;
+//        while (i < HANDLING_TIMES) {
+//            PndResource resource = resourceDao.findById(file.getResourceId());
+//            if (Objects.isNull(resource)){
+//                logger.error("索引资源失败 fileId-{} resourceId-{}", file.getId(), file.getResourceId());
+//                throw new SystemDealFailException("文件删除失败");
+//            }
+//            int expectedVal = resource.getLink();
+//            if (expectedVal <= 0){
+//                break;
+//            }
+//            int affectedRows = resourceDao.updateIndex(resource.getId(), expectedVal, expectedVal - 1);
+//            if (affectedRows > 0){
+//                break;
+//            }
+//            i++;
+//        }
+//        if (i >= HANDLING_TIMES){
+//            throw new SystemDealFailException("文件删除失败");
+//        }
+        updateResourceIndex(file.getResourceId(), new ResourceLinkOperation() {
+            @Override
+            public long operation(long originVal) {
+                return originVal - 1;
+            }
+        });
+    }
+
+    private void updateResourceIndex(long id, ResourceLinkOperation rlo){
+        if (Objects.isNull(rlo)){
+            throw new IllegalArgumentException("rlo can't be null");
+        }
+        int i = 0;
         while (i < HANDLING_TIMES) {
-            PndResource resource = resourceDao.findById(file.getResourceId());
+            PndResource resource = resourceDao.findById(id);
             if (Objects.isNull(resource)){
-                logger.error("索引资源失败 fileId-{} resourceId-{}", file.getId(), file.getResourceId());
-                throw new SystemDealFailException("文件删除失败");
+                logger.error("索引资源失败 resourceId-{}", id);
+                throw new SystemDealFailException("资源操作失败");
             }
             int expectedVal = resource.getLink();
-            if (expectedVal <= 0){
-                break;
+            if (expectedVal < 0){
+                throw new RuntimeException("系统存在脏数据");
             }
-            int affectedRows = resourceDao.updateIndex(resource.getId(), expectedVal, expectedVal - 1);
+            int affectedRows = resourceDao.updateIndex(resource.getId(), expectedVal, rlo.operation(expectedVal));
             if (affectedRows > 0){
                 break;
             }
             i++;
         }
         if (i >= HANDLING_TIMES){
-            throw new SystemDealFailException("文件删除失败");
+            throw new SystemDealFailException("资源操作失败");
         }
     }
 
     private static final int HANDLING_TIMES = 10;
+
+    @FunctionalInterface
+    interface ResourceLinkOperation{
+        /**
+         * 资源操作
+         * @param originVal
+         * @return
+         */
+        long operation(long originVal);
+    }
 }
