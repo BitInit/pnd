@@ -19,9 +19,11 @@ git clone https://github.com/BitInit/pnd.git
 cd pnd
 mvn clean package
 
-# pnd/pnd-distribution/target" 下可看到构建好的 *.tar.gz 和 *.zip 包
+# pnd/distribution/target" 下可看到构建好的 *.tar.gz 和 *.zip 包
 # 运行
 bin/startup.sh
+
+# 浏览器访问：http://localhost:8989
 ```
 
 ### 直接下载安装包
