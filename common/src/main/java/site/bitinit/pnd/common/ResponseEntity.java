@@ -1,30 +1,27 @@
 package site.bitinit.pnd.common;
 
+import site.bitinit.pnd.common.util.StringUtils;
+
 /**
  * @author: john
  * @date: 2019/3/28
  */
 public class ResponseEntity<T> {
 
-    private int code;
     private String msg;
     private T data;
 
     public ResponseEntity() {
     }
 
-    public ResponseEntity(int code, String msg, T data) {
-        this.code = code;
+    public ResponseEntity(String msg) {
+        this.msg = msg;
+        this.data = (T) StringUtils.EMPTY;
+    }
+
+    public ResponseEntity(String msg, T data) {
         this.msg = msg;
         this.data = data;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
     }
 
     public String getMsg() {
@@ -46,7 +43,6 @@ public class ResponseEntity<T> {
     @Override
     public String toString() {
         return "ResponseEntity{" +
-                "code=" + code +
                 ", msg='" + msg + '\'' +
                 ", data=" + data +
                 '}';

@@ -4,22 +4,20 @@ import site.bitinit.pnd.common.ResponseEntity;
 
 /**
  * @author: john
- * @date: 2019/3/28
+ * @date: 2019/4/15
  */
 public class ResponseUtils {
-
-    public static final int OK = 200;
-    public static final int BAD_REQUEST = 400;
-    public static final int FORBIDDEN = 403;
-    public static final int NOT_FOUND = 404;
-    public static final int SERVER_ERROR = 500;
 
     public static <T> ResponseEntity<T> ok(T data){
         return ok("success", data);
     }
 
     public static <T> ResponseEntity<T> ok(String msg, T data){
-        return new ResponseEntity<>(OK, msg, data);
+        return new ResponseEntity<>(msg, data);
+    }
+
+    public static <T> ResponseEntity<T> badRequest(T data){
+        return badRequest("bad request", data);
     }
 
     public static <T> ResponseEntity<T> badRequest(String msg){
@@ -27,22 +25,14 @@ public class ResponseUtils {
     }
 
     public static <T> ResponseEntity<T> badRequest(String msg, T data){
-        return new ResponseEntity<>(BAD_REQUEST, msg, data);
-    }
-
-    public static <T> ResponseEntity<T> notFound(String msg){
-        return notFound(msg, null);
-    }
-
-    public static <T> ResponseEntity<T> notFound(String msg, T data){
-        return new ResponseEntity<>(NOT_FOUND, msg, data);
+        return new ResponseEntity<>(msg, data);
     }
 
     public static <T> ResponseEntity<T> serverError(String msg){
-        return serverError(msg, null);
+        return new ResponseEntity<>("server error", null);
     }
 
     public static <T> ResponseEntity<T> serverError(String msg, T data){
-        return new ResponseEntity<>(SERVER_ERROR, msg, data);
+        return new ResponseEntity<>(msg, data);
     }
 }

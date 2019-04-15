@@ -9,12 +9,12 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import site.bitinit.pnd.common.exception.IllegalDataException;
 import site.bitinit.pnd.common.util.Assert;
+import site.bitinit.pnd.exception.SystemDealFailException;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.FileDetailDto;
 import site.bitinit.pnd.web.dao.FileDao;
 import site.bitinit.pnd.web.dao.FileResourceDao;
 import site.bitinit.pnd.web.dao.ResourceDao;
-import site.bitinit.pnd.exception.SystemDealFailException;
 import site.bitinit.pnd.web.model.PndFile;
 import site.bitinit.pnd.web.model.PndResource;
 import site.bitinit.pnd.web.service.FileService;
@@ -54,7 +54,6 @@ public class FileServiceImpl implements FileService {
     @Override
     public void renameFile(long id, String fileName) {
         Assert.notEmpty(fileName, "新文件名不能为空");
-
         fileDao.renameFile(id, fileName);
     }
 
@@ -110,6 +109,8 @@ public class FileServiceImpl implements FileService {
                 int num = 0;
                 for (Long targetId: targetIds) {
                     PndFile targetFile = fileDao.findById(targetId);
+                    // 可能复制到根目录
+                    targetFile = targetId == 0? PndFile.ROOT_PND_FILE: targetFile;
                     if (Objects.isNull(targetFile) || !SystemConstants.FileType.FOLDER.toString().equals(targetFile.getType())){
                         continue;
                     }
@@ -204,7 +205,7 @@ public class FileServiceImpl implements FileService {
     private void deleteCommonFile0(PndFile file){
         if (Objects.isNull(file.getResourceId())){
             logger.error("索引资源失败 fileId-{}", file.getId());
-            throw new SystemDealFailException("文件删除失败");
+            return;
         }
 
         fileDao.deleteFile(file.getId());
@@ -225,7 +226,7 @@ public class FileServiceImpl implements FileService {
             PndResource resource = resourceDao.findById(id);
             if (Objects.isNull(resource)){
                 logger.error("索引资源失败 resourceId-{}", id);
-                throw new SystemDealFailException("资源操作失败");
+                return;
             }
             int expectedVal = resource.getLink();
             if (expectedVal < 0){

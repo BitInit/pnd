@@ -30,19 +30,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity notFoundException(HttpRequestMethodNotSupportedException e){
-        return ResponseUtils.notFound("404 not found");
+        return new ResponseEntity("404 not found");
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ResponseEntity systemDealFailException(SystemDealFailException e){
         logger.warn("[system-warn]", e);
-        return ResponseUtils.serverError(e.getMessage(), null);
+        return ResponseUtils.badRequest(e.getMessage(), null);
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity exception(Exception e){
         logger.error("[system-error] ", e);
-        return ResponseUtils.serverError("服务器错误，请联系管理员");
+        return new ResponseEntity("服务器错误，请联系管理员");
     }
 }
