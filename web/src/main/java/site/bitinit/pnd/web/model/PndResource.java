@@ -11,7 +11,7 @@ public class PndResource {
     private Long size;
     private String path;
     private String uuid;
-    private String crc;
+    private String fingerPrint;
     private String status;
     private Long gmtCreate;
     private Long gmtModified;
@@ -49,12 +49,12 @@ public class PndResource {
         this.uuid = uuid;
     }
 
-    public String getCrc() {
-        return crc;
+    public String getFingerPrint() {
+        return fingerPrint;
     }
 
-    public void setCrc(String crc) {
-        this.crc = crc;
+    public void setFingerPrint(String fingerPrint) {
+        this.fingerPrint = fingerPrint;
     }
 
     public String getStatus() {

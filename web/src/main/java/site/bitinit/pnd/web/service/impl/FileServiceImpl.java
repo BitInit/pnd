@@ -52,6 +52,28 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public void createFile(PndFile file) {
+        Assert.notNull(file);
+        Assert.notEmpty(file.getName(), "文件名不能为空");
+        Assert.notNull(file.getResourceId(), "资源id不能为空");
+
+        file.setType(SystemConstants.getFileType(file.getName()).toString());
+        transactionTemplate.execute(new TransactionCallback<Boolean>() {
+            @Override
+            public Boolean doInTransaction(TransactionStatus transactionStatus) {
+                fileDao.save(file);
+                updateResourceLink(file.getResourceId(), new ResourceLinkOperation() {
+                    @Override
+                    public long operate(long originVal) {
+                        return originVal + 1;
+                    }
+                });
+                return Boolean.TRUE;
+            }
+        });
+    }
+
+    @Override
     public void renameFile(long id, String fileName) {
         Assert.notEmpty(fileName, "新文件名不能为空");
         fileDao.renameFile(id, fileName);

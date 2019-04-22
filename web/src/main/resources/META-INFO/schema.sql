@@ -20,6 +20,6 @@ CREATE TABLE pnd_resource (
   gmt_modified timestamp NOT NULL DEFAULT '2019-01-01 00:00:00',
   gmt_create timestamp NOT NULL DEFAULT '2019-01-01 00:00:00',
   status varchar(45) NOT NULL,
-  crc varchar(32) NOT NULL,
+  finger_print varchar(32) NOT NULL,
   link int DEFAULT 0,
   constraint pnd_resource_id_key PRIMARY KEY (id));

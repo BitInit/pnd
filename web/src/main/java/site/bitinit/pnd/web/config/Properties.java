@@ -33,6 +33,9 @@ public class Properties {
     private String embedDBUsername = "pnd";
     private String embedDBPassword = "pnd";
 
+    private Integer maxConcurrentUploadNumbers;
+    private Long chunkByteSize;
+
     @Autowired
     private Environment env;
 
@@ -48,6 +51,9 @@ public class Properties {
         setDbInitialSize(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_INITIAL_SIZE, "10")));
         setDbMaxActive(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_MAX_ACTIVE, "20")));
         setDbMaxIdle(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_MAX_IDLE, "50")));
+
+        setMaxConcurrentUploadNumbers(Integer.parseInt(getEnvProperty(EnvironmentConstants.MAX_CONCURRENT_UPLOAD_NUMBERS, "4")));
+        setChunkByteSize(Long.parseLong(getEnvProperty(EnvironmentConstants.CHUNK_BYTES_SIZE, "10485760")));
 
         // system environment variable
         setPndHome(getSystemProperty(EnvironmentConstants.PND_HOME, getPndHome()));
@@ -156,6 +162,22 @@ public class Properties {
 
     public void setEmbedDBPassword(String embedDBPassword) {
         this.embedDBPassword = embedDBPassword;
+    }
+
+    public Integer getMaxConcurrentUploadNumbers() {
+        return maxConcurrentUploadNumbers;
+    }
+
+    public void setMaxConcurrentUploadNumbers(Integer maxConcurrentUploadNumbers) {
+        this.maxConcurrentUploadNumbers = maxConcurrentUploadNumbers;
+    }
+
+    public Long getChunkByteSize() {
+        return chunkByteSize;
+    }
+
+    public void setChunkByteSize(Long chunkByteSize) {
+        this.chunkByteSize = chunkByteSize;
     }
 
     private String getEnvProperty(String key, String defaultVal){

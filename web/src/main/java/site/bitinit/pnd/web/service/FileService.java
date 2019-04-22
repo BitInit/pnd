@@ -26,6 +26,12 @@ public interface FileService {
     void createFolder(long parentId, String folderName);
 
     /**
+     * 创建文件
+     * @param file
+     */
+    void createFile(PndFile file);
+
+    /**
      * 文件重命名
      * @param id
      * @param fileName

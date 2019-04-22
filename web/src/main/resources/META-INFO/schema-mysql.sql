@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `pnd_resource` (
   `uuid` varchar(255) NOT NULL,
   `gmt_create` datetime DEFAULT '2019-01-01 00:00:00',
   `status` varchar(45) NOT NULL COMMENT '资源状态，表示是否完整等',
-  `crc` varchar(32) NOT NULL,
+  `finger_print` varchar(32) NOT NULL,
   `gmt_modified` datetime DEFAULT '2019-01-01 00:00:00',
   `link` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)

@@ -25,6 +25,7 @@ public class FileDao {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private DaoUtils daoUtils;
+
     public PndFile findById(long id){
         String sql = "select" + FILE_ALL_FIELDS + "from" + FILE_TABLE_NAME + "where id = ?";
         return daoUtils.queryForObject(sql, FILE_ROW_MAPPER, id);

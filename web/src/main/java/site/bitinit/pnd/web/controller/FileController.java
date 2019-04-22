@@ -7,6 +7,7 @@ import site.bitinit.pnd.common.ResponseEntity;
 import site.bitinit.pnd.common.util.ResponseUtils;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.FileDetailDto;
+import site.bitinit.pnd.web.model.PndFile;
 import site.bitinit.pnd.web.service.FileService;
 
 import java.util.List;
@@ -27,11 +28,17 @@ public class FileController {
         return ResponseUtils.ok(list);
     }
 
-    @PostMapping("/file")
+    @PostMapping("/file/folder")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createFile(@RequestParam(defaultValue = "0") long parentId,
+    public void createFolder(@RequestParam(defaultValue = "0") long parentId,
                            String folderName){
         fileService.createFolder(parentId, folderName);
+    }
+
+    @PostMapping("/file")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createFile(@RequestBody PndFile file){
+        fileService.createFile(file);
     }
 
     @PutMapping("/file/{id}")
