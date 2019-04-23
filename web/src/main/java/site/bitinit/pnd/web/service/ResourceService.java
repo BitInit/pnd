@@ -37,7 +37,7 @@ public interface ResourceService {
      * @param fileName
      * @return
      */
-    Map<String, Object> prepareFileUpload(String clientId, String fingerPrint, long size, long parentId, String fileName);
+    Map<String, Object> prepareFileUpload(String clientId, String fingerPrint, Long size, Long parentId, String fileName);
 
     /**
      * 更新资源状态

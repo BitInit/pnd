@@ -14,7 +14,6 @@ import site.bitinit.pnd.common.exception.PndException;
 import site.bitinit.pnd.common.util.Assert;
 import site.bitinit.pnd.common.util.CommonUtils;
 import site.bitinit.pnd.common.util.ResponseUtils;
-import site.bitinit.pnd.common.util.StringUtils;
 import site.bitinit.pnd.web.config.Properties;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.ResourceConfigDto;
@@ -24,6 +23,7 @@ import site.bitinit.pnd.web.model.PndFile;
 import site.bitinit.pnd.web.model.PndResource;
 import site.bitinit.pnd.web.model.PndResourceState;
 import site.bitinit.pnd.web.service.*;
+import site.bitinit.pnd.web.utils.PathUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +52,8 @@ public class ResourceServiceImpl implements ResourceService {
     private ResourceStateCacheService cacheService;
     @Autowired
     private PersistResourceService persistResourceService;
+    @Autowired
+    private PathUtils pathUtils;
 
     @Override
     public ResourceConfigDto getConfig() {
@@ -77,7 +79,12 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public Map<String, Object> prepareFileUpload(String clientId, String fingerPrint, long size, long parentId, String fileName) {
+    public Map<String, Object> prepareFileUpload(String clientId, String fingerPrint, Long size, Long parentId, String fileName) {
+        Assert.notEmpty(fingerPrint, "文件指纹不能为空");
+        Assert.notEmpty(clientId, "客户端id不能为空");
+        Assert.notNull(size, "size不能为空");
+        Assert.notEmpty(fileName, "文件名不能为空");
+
         PndResource resource = new PndResource();
         resource.setFingerPrint(fingerPrint);
         resource.setStatus(SystemConstants.ResourceState.pending.toString());
@@ -86,12 +93,7 @@ public class ResourceServiceImpl implements ResourceService {
         resource.setGmtCreate(currentTime);
         resource.setGmtModified(currentTime);
         resource.setLink(0);
-        String resourceSubfolder = CommonUtils.getResourceSubfolder();
-        String filePath = properties.getDataDir() + File.separator + "resource" + File.separator + resourceSubfolder;
-        if (StringUtils.isBlank(properties.getDataDir())){
-            filePath = properties.getPndHome() + File.separator + "data" + File.separator + "resource" + File.separator + resourceSubfolder;
-        }
-        resource.setPath(filePath);
+        resource.setPath(pathUtils.getResourceSubfolder());
         resource.setSize(size);
 
         Long id = transactionTemplate.execute(new TransactionCallback<Long>() {
@@ -100,14 +102,13 @@ public class ResourceServiceImpl implements ResourceService {
                 long id = resourceDao.save(resource);
                 resource.setId(id);
 
-                File pathFile = new File(resource.getPath());
+                File pathFile = new File(pathUtils.getResourceAbsolutionPath(resource.getPath()));
                 File file = new File(pathFile, resource.getUuid() + CommonUtils.extractFileExtensionName(fileName));
                 try {
                     if (!pathFile.exists()){
                         pathFile.mkdirs();
                     }
                     file.createNewFile();
-                    PndResourceState state = new PndResourceState(resource, fileName, parentId, file);
                     PndResourceState.PndResourceStateBuilder builder = PndResourceState.builder();
                     builder.fileName(fileName)
                             .parentId(parentId)

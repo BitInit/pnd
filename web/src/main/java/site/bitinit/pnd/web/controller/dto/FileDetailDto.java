@@ -17,12 +17,12 @@ public class FileDetailDto {
     private Long gmtCreate;
     private Long gmtModified;
     private Long resourceId;
-    private Integer size;
+    private Long size;
 
     public FileDetailDto() {
     }
 
-    public FileDetailDto(PndFile file, Integer size) {
+    public FileDetailDto(PndFile file, Long size) {
         if (Objects.isNull(file) || Objects.isNull(size)){
             return;
         }
@@ -92,11 +92,11 @@ public class FileDetailDto {
         this.resourceId = resourceId;
     }
 
-    public Integer getSize() {
+    public Long getSize() {
         return size;
     }
 
-    public void setSize(Integer size) {
+    public void setSize(Long size) {
         this.size = size;
     }
 

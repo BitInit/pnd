@@ -29,24 +29,6 @@ public class PndResourceState extends PndResource {
         fillData(builder);
     }
 
-    public PndResourceState(PndResource resource, String fileName, long parentId, File file) throws FileNotFoundException {
-        setId(resource.getId());
-        setLink(resource.getLink());
-        setFingerPrint(resource.getFingerPrint());
-        setGmtCreate(resource.getGmtCreate());
-        setGmtModified(resource.getGmtModified());
-        setPath(resource.getPath());
-        setSize(resource.getSize());
-        setStatus(resource.getStatus());
-        setUuid(resource.getUuid());
-        this.fileName = fileName;
-        this.parentId = parentId;
-
-        Assert.notNull(file, "file can't be null");
-        this.file = file;
-        this.outputStream = new FileOutputStream(file, true);
-    }
-
     public synchronized long getFinishedUploadBytes() {
         return finishedUploadBytes;
     }

@@ -52,7 +52,6 @@ public class PersistResourceService {
                 state.getOutputStream().write(buffer);
                 state.addFinishedUploadBytes(bytesRead);
 
-                System.out.println("persist [" + state.getFinishedUploadBytes() + "] bytes");
                 resourcePersistPools.submit(this);
             } else {
                 if (state.getFinishedUploadBytes() == state.getSize()){

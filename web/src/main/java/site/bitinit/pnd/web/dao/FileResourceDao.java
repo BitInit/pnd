@@ -48,7 +48,7 @@ public class FileResourceDao {
             fd.setType(rs.getString("f_type"));
             fd.setParentId(rs.getLong("f_parent_id"));
             fd.setResourceId(rs.getLong("f_resource_id"));
-            fd.setSize(rs.getInt("r_size"));
+            fd.setSize(rs.getLong("r_size"));
             fd.setGmtCreate(rs.getTimestamp("f_gmt_create").getTime());
             fd.setGmtModified(rs.getTimestamp("f_gmt_modified").getTime());
             return fd;

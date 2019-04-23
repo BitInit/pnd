@@ -24,14 +24,7 @@ public class CommonUtils {
         return f.format(date);
     }
 
-    public static String getResourceSubfolder(){
-        return getResourceSubfolder(new Date());
-    }
 
-    public static String getResourceSubfolder(Date date){
-        String[] basePaths = formatDate(date, "yyyy-MM").split("-");
-        return basePaths[0] + File.separator + basePaths[1];
-    }
 
     public static String uuid(){
         return UUID.randomUUID().toString().replaceAll("-", "");

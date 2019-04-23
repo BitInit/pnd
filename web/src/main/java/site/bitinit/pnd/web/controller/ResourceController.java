@@ -31,18 +31,17 @@ public class ResourceController {
 
     @PostMapping("/rs/preparation")
     public ResponseEntity prepareFileUpload(String clientId, String fileFingerPrint,
-                                  long size, long parentId, String fileName){
+                                  Long size, long parentId, String fileName){
         return ResponseUtils.ok(resourceService.prepareFileUpload(clientId, fileFingerPrint, size, parentId, fileName));
     }
 
     @GetMapping("/rs/fingerPrint")
     public ResponseEntity resourceExists(String fingerPrint){
-        System.out.println(fingerPrint);
         return ResponseUtils.ok(resourceService.resourceExists(fingerPrint));
     }
 
     @PostMapping("/rs/upload")
-    public void resourceUpload(String clientId, Long resourceId, MultipartFile file,
+    public void resourceUpload(String clientId, Long resourceId, @RequestParam("file") MultipartFile file,
                                          HttpServletRequest request) throws IOException {
         Assert.notEmpty(clientId, "客户端id不能为空");
         Assert.notNull(resourceId, "资源id不能为空");
