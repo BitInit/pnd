@@ -15,10 +15,19 @@ public class ResourceUploadResponseDto {
      */
     public static final int PAUSED = 1;
 
+    /**
+     * 上传文件错误
+     */
+    public static final int FAILED = -1;
+
     private int code;
     private long completeBytes;
 
     public ResourceUploadResponseDto() {
+    }
+
+    public ResourceUploadResponseDto(int code) {
+        this.code = code;
     }
 
     public ResourceUploadResponseDto(int code, long completeBytes) {
@@ -48,5 +57,9 @@ public class ResourceUploadResponseDto {
 
     public static ResourceUploadResponseDto paused(long completeBytes){
         return new ResourceUploadResponseDto(PAUSED, completeBytes);
+    }
+
+    public static ResourceUploadResponseDto failed(){
+        return new ResourceUploadResponseDto(FAILED);
     }
 }

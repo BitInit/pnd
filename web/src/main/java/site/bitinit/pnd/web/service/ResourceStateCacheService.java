@@ -4,9 +4,12 @@ import com.google.common.cache.*;
 import org.springframework.stereotype.Service;
 import site.bitinit.pnd.common.exception.IllegalDataException;
 import site.bitinit.pnd.common.util.Assert;
+import site.bitinit.pnd.web.model.PndResource;
 import site.bitinit.pnd.web.model.PndResourceState;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,35 +19,52 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ResourceStateCacheService {
 
-    private final LoadingCache<String, ConcurrentHashMap<Long, PndResourceState>> resourceStateCache = CacheBuilder.newBuilder()
+    private final LoadingCache<String, PndResourceState> resourceStateCache = CacheBuilder.newBuilder()
             .expireAfterAccess(30, TimeUnit.MINUTES)
-            //TODO 缓存过期需要进行资源清除
-            .build(new CacheLoader<String, ConcurrentHashMap<Long, PndResourceState>>() {
+            .removalListener(new RemovalListener<String, PndResourceState>() {
                 @Override
-                public ConcurrentHashMap<Long, PndResourceState> load(String s) {
-                    return new ConcurrentHashMap<>(5);
+                public void onRemoval(RemovalNotification<String, PndResourceState> removalNotification) {
+                    PndResourceState state = removalNotification.getValue();
+                    OutputStream os = state.getOutputStream();
+                    if (!Objects.isNull(os)){
+                        try {
+                            os.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            })
+            .build(new CacheLoader<String, PndResourceState>() {
+                @Override
+                public PndResourceState load(String s) {
+                    return new PndResourceState();
                 }
             });
 
-    public void addResource(String clientId, Long resourceId, PndResourceState state){
-        Assert.notNull(clientId, "clientId can't be null");
-        Assert.notNull(resourceId, "resourceId can't be null");
-
-        resourceStateCache.getUnchecked(clientId).putIfAbsent(resourceId, state);
+    public void addResource(String clientId, Long resourceId, PndResourceState.PndResourceStateBuilder stateBuilder){
+        String cacheKey = getCacheKey(clientId, resourceId);
+        stateBuilder.build(resourceStateCache.getUnchecked(cacheKey));
     }
 
     public PndResourceState getResourceState(String clientId, Long resourceId){
-        Assert.notNull(clientId, "clientId can't be null");
-        Assert.notNull(resourceId, "resourceId can't be null");
-
-        ConcurrentHashMap<Long, PndResourceState> ifPresent = resourceStateCache.getIfPresent(clientId);
-        if (ifPresent == null || !ifPresent.containsKey(resourceId)){
-            throw new IllegalDataException("文件上传前必须进行初始化");
+        String cacheKey = getCacheKey(clientId, resourceId);
+        PndResourceState ifPresent = resourceStateCache.getIfPresent(cacheKey);
+        if (ifPresent == null){
+            throw new IllegalDataException("资源id为 " + resourceId + " 未进行上传前初始化");
         }
-        return ifPresent.get(resourceId);
+        return ifPresent;
     }
 
     public void deleteResource(String clientId, Long resourceId){
-        resourceStateCache.getUnchecked(clientId).remove(resourceId);
+        String cacheKey = getCacheKey(clientId, resourceId);
+        resourceStateCache.invalidate(cacheKey);
+    }
+
+    String getCacheKey(String clientId, Long resourceId){
+        Assert.notNull(clientId, "clientId can't be null");
+        Assert.notNull(resourceId, "resourceId can't be null");
+
+        return clientId + "-" + resourceId;
     }
 }

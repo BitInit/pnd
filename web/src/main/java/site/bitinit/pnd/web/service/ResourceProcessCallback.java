@@ -33,6 +33,6 @@ public interface ResourceProcessCallback {
      * 处理过程中出现错误
      * @param e
      */
-    default void onError(Exception e){
+    default void onError(Exception e) throws Exception {
     }
 }

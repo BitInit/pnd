@@ -52,13 +52,20 @@ public class PersistResourceService {
                 state.getOutputStream().write(buffer);
                 state.addFinishedUploadBytes(bytesRead);
 
+                System.out.println("persist [" + state.getFinishedUploadBytes() + "] bytes");
                 resourcePersistPools.submit(this);
             } else {
-                processCallback.onComplete(state);
+                if (state.getFinishedUploadBytes() == state.getSize()){
+                    processCallback.onSuccess(state);
+                } else if (state.getFinishedUploadBytes() > state.getSize()){
+                    processCallback.onError(new RuntimeException("无效文件"));
+                } else {
+                    processCallback.onComplete(state);
+                }
             }
             return null;
         }
     }
 
-    private static final int BUFFER_SIZE = 100;
+    private static final int BUFFER_SIZE = 8192;
 }

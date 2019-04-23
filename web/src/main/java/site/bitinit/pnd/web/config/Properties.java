@@ -3,6 +3,7 @@ package site.bitinit.pnd.web.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.util.unit.DataSize;
 import site.bitinit.pnd.common.EnvironmentConstants;
 import site.bitinit.pnd.common.util.StringUtils;
 
@@ -35,6 +36,8 @@ public class Properties {
 
     private Integer maxConcurrentUploadNumbers;
     private Long chunkByteSize;
+    private String maxFileUploadSize;
+    private String maxRequestSize;
 
     @Autowired
     private Environment env;
@@ -53,7 +56,14 @@ public class Properties {
         setDbMaxIdle(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_MAX_IDLE, "50")));
 
         setMaxConcurrentUploadNumbers(Integer.parseInt(getEnvProperty(EnvironmentConstants.MAX_CONCURRENT_UPLOAD_NUMBERS, "4")));
+        setMaxFileUploadSize(getEnvProperty(EnvironmentConstants.MAX_FILE_UPLOAD_SIZE, "12MB"));
+        setMaxRequestSize(getEnvProperty(EnvironmentConstants.MAX_REQUEST_SIZE, "15MB"));
+        // 10MB
         setChunkByteSize(Long.parseLong(getEnvProperty(EnvironmentConstants.CHUNK_BYTES_SIZE, "10485760")));
+
+        if (getChunkByteSize() > DataSize.parse(getMaxFileUploadSize()).toBytes()){
+            throw new RuntimeException("文件块大小不能大于系统设置最大文件大小");
+        }
 
         // system environment variable
         setPndHome(getSystemProperty(EnvironmentConstants.PND_HOME, getPndHome()));
@@ -178,6 +188,23 @@ public class Properties {
 
     public void setChunkByteSize(Long chunkByteSize) {
         this.chunkByteSize = chunkByteSize;
+    }
+
+
+    public String getMaxFileUploadSize() {
+        return maxFileUploadSize;
+    }
+
+    public void setMaxFileUploadSize(String maxFileUploadSize) {
+        this.maxFileUploadSize = maxFileUploadSize;
+    }
+
+    public String getMaxRequestSize() {
+        return maxRequestSize;
+    }
+
+    public void setMaxRequestSize(String maxRequestSize) {
+        this.maxRequestSize = maxRequestSize;
     }
 
     private String getEnvProperty(String key, String defaultVal){

@@ -42,4 +42,6 @@ public class EnvironmentConstants {
 
     public static final String MAX_CONCURRENT_UPLOAD_NUMBERS = "pnd.fileUpload.maxConcurrentUploadNumbers";
     public static final String CHUNK_BYTES_SIZE = "pnd.fileUpload.chunkBytesSize";
+    public static final String MAX_FILE_UPLOAD_SIZE = "pnd.fileUpload.maxFileUploadSize";
+    public static final String MAX_REQUEST_SIZE = "pnd.multipart.maxRequestSize";
 }

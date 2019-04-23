@@ -4,31 +4,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import site.bitinit.pnd.common.ResponseEntity;
+import site.bitinit.pnd.common.exception.IllegalDataException;
 import site.bitinit.pnd.common.exception.PndException;
 import site.bitinit.pnd.common.util.Assert;
 import site.bitinit.pnd.common.util.CommonUtils;
 import site.bitinit.pnd.common.util.ResponseUtils;
 import site.bitinit.pnd.common.util.StringUtils;
-import site.bitinit.pnd.exception.ResourcePersistException;
 import site.bitinit.pnd.web.config.Properties;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.ResourceConfigDto;
 import site.bitinit.pnd.web.controller.dto.ResourceUploadResponseDto;
 import site.bitinit.pnd.web.dao.ResourceDao;
+import site.bitinit.pnd.web.model.PndFile;
 import site.bitinit.pnd.web.model.PndResource;
 import site.bitinit.pnd.web.model.PndResourceState;
-import site.bitinit.pnd.web.service.PersistResourceService;
-import site.bitinit.pnd.web.service.ResourceProcessCallback;
-import site.bitinit.pnd.web.service.ResourceService;
-import site.bitinit.pnd.web.service.ResourceStateCacheService;
+import site.bitinit.pnd.web.service.*;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +44,8 @@ public class ResourceServiceImpl implements ResourceService {
     private TransactionTemplate transactionTemplate;
     @Autowired
     private ResourceDao resourceDao;
+    @Autowired
+    private FileService fileService;
     @Autowired
     private Properties properties;
     @Autowired
@@ -108,7 +108,13 @@ public class ResourceServiceImpl implements ResourceService {
                     }
                     file.createNewFile();
                     PndResourceState state = new PndResourceState(resource, fileName, parentId, file);
-                    cacheService.addResource(clientId, id, state);
+                    PndResourceState.PndResourceStateBuilder builder = PndResourceState.builder();
+                    builder.fileName(fileName)
+                            .parentId(parentId)
+                            .file(file)
+                            .pndResource(resource);
+
+                    cacheService.addResource(clientId, id, builder);
                 } catch (IOException e) {
                     logger.error("create " + fileName + " error");
                     throw new PndException();
@@ -123,10 +129,17 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public void fileUpload(String clientId, Long resourceId
-            , InputStream is, AsyncContext context) {
-        PndResourceState state = cacheService.getResourceState(clientId, resourceId);
+    public void updateResourceState(long resourceId, SystemConstants.ResourceState resourceState) {
+        resourceDao.updateState(resourceId, resourceState);
+    }
 
+    @Override
+    public void fileUpload(String clientId, Long resourceId
+            , InputStream is, HttpServletRequest request) {
+        PndResourceState state = cacheService.getResourceState(clientId, resourceId);
+        state.setPaused(false);
+
+        final AsyncContext context = request.startAsync();
         context.addListener(new UploadAsyncListener(state));
         final ResourceProcessCallback processCallback = new ResourceProcessCallback() {
             @Override
@@ -140,28 +153,40 @@ public class ResourceServiceImpl implements ResourceService {
 
             @Override
             public void onSuccess(PndResourceState state) {
-                //TODO 存储file，清除缓存
-                close(state);
+                //TODO 添加事务支持
+                PndFile file = new PndFile();
+                file.setParentId(state.getParentId());
+                file.setType(SystemConstants.getFileType(state.getFileName()).toString());
+                file.setResourceId(state.getId());
+                file.setName(state.getFileName());
+                fileService.createFile(file);
+                updateResourceState(state.getId(), SystemConstants.ResourceState.succeeded);
+                cacheService.deleteResource(clientId, state.getId());
                 context.complete();
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(Exception e) throws Exception {
                 // TODO 处理错误
                 context.complete();
             }
 
-            private void close(PndResourceState state){
-                if (state.getOutputStream() != null){
-                    try {
-                        state.getOutputStream().close();
-                    } catch (IOException e) {
-                    }
-                }
-            }
         };
 
         persistResourceService.process(state, is, processCallback);
+    }
+
+    @Override
+    public void pauseResource(String clientId, Long resourceId) {
+        Assert.notEmpty(clientId, "客户端id不能为空");
+        Assert.notNull(resourceId);
+
+        PndResourceState state = cacheService.getResourceState(clientId, resourceId);
+        if (state == null){
+            throw new IllegalDataException("没有 resourceId=" + resourceId + "的文件正在上传");
+        } else {
+            state.setPaused(true);
+        }
     }
 
     class UploadAsyncListener implements AsyncListener{
@@ -182,11 +207,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
 
             ServletResponse response = event.getSuppliedResponse();
-            response.setContentType("application/json; charset=utf8");
-            ServletOutputStream outputStream = response.getOutputStream();
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(outputStream, entity);
-            outputStream.flush();
+            response(entity, response);
         }
 
         @Override
@@ -199,6 +220,14 @@ public class ResourceServiceImpl implements ResourceService {
 
         @Override
         public void onStartAsync(AsyncEvent event) throws IOException {
+        }
+
+        private void response(ResponseEntity entity, ServletResponse response) throws IOException {
+            response.setContentType("application/json; charset=utf8");
+            ServletOutputStream outputStream = response.getOutputStream();
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(outputStream, entity);
+            outputStream.flush();
         }
     }
 }

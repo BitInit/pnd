@@ -1,9 +1,11 @@
 package site.bitinit.pnd.web.service;
 
+import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.ResourceConfigDto;
 import site.bitinit.pnd.web.controller.dto.ResourceUploadResponseDto;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -38,10 +40,25 @@ public interface ResourceService {
     Map<String, Object> prepareFileUpload(String clientId, String fingerPrint, long size, long parentId, String fileName);
 
     /**
+     * 更新资源状态
+     * @param resourceId
+     * @param resourceState
+     */
+    void updateResourceState(long resourceId, SystemConstants.ResourceState resourceState);
+
+    /**
      * 文件片段上传
      * @param clientId
      * @param resourceId
      * @param is
+     * @param request
      */
-    void fileUpload(String clientId, Long resourceId, InputStream is, AsyncContext context);
+    void fileUpload(String clientId, Long resourceId, InputStream is, HttpServletRequest request);
+
+    /**
+     * 中断文件上传
+     * @param clientId
+     * @param resourceId
+     */
+    void pauseResource(String clientId, Long resourceId);
 }

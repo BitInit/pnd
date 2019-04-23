@@ -71,6 +71,12 @@ public class ResourceDao {
         return keyHolder.getKey().longValue();
      }
 
+     public int updateState(long id, SystemConstants.ResourceState resourceState){
+        String sql = "update " + RESOURCE_TABLE_NAME + " set status = ?, gmt_modified = ?" +
+                " where id = ?";
+        return jdbcTemplate.update(sql, resourceState.name(), CommonUtils.formatDate(), id);
+     }
+
     public int updateIndex(long id, long expected, long val){
         String sql = "update " + RESOURCE_TABLE_NAME + " set link = ?, gmt_modified = ? " +
                 " where id = ? and link = ?";
