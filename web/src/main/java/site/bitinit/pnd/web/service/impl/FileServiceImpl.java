@@ -58,18 +58,10 @@ public class FileServiceImpl implements FileService {
         Assert.notNull(file.getResourceId(), "资源id不能为空");
 
         file.setType(SystemConstants.getFileType(file.getName()).toString());
-        transactionTemplate.execute(new TransactionCallback<Boolean>() {
-            @Override
-            public Boolean doInTransaction(TransactionStatus transactionStatus) {
-                fileDao.save(file);
-                updateResourceLink(file.getResourceId(), new ResourceLinkOperation() {
-                    @Override
-                    public long operate(long originVal) {
-                        return originVal + 1;
-                    }
-                });
-                return Boolean.TRUE;
-            }
+        transactionTemplate.execute((transactionStatus) -> {
+            fileDao.save(file);
+            updateResourceLink(file.getResourceId(), originVal -> originVal + 1);
+            return Boolean.TRUE;
         });
     }
 
@@ -125,36 +117,28 @@ public class FileServiceImpl implements FileService {
         if (Objects.isNull(file) || SystemConstants.FileType.FOLDER.toString().equals(file.getType())){
             throw new IllegalDataException("源文件不存在或源文件不能是文件夹");
         }
-        transactionTemplate.execute(new TransactionCallback<Boolean>() {
-            @Override
-            public Boolean doInTransaction(TransactionStatus transactionStatus) {
-                int num = 0;
-                for (Long targetId: targetIds) {
-                    PndFile targetFile = fileDao.findById(targetId);
-                    // 可能复制到根目录
-                    targetFile = targetId == 0? PndFile.ROOT_PND_FILE: targetFile;
-                    if (Objects.isNull(targetFile) || !SystemConstants.FileType.FOLDER.toString().equals(targetFile.getType())){
-                        continue;
-                    }
-
-                    PndFile copyFile = new PndFile();
-                    copyFile.setName(file.getName());
-                    copyFile.setParentId(targetId);
-                    copyFile.setType(file.getType());
-                    copyFile.setResourceId(file.getResourceId());
-                    fileDao.save(copyFile);
-                    num++;
+        transactionTemplate.execute((transactionStatus) -> {
+            int num = 0;
+            for (Long targetId: targetIds) {
+                PndFile targetFile = fileDao.findById(targetId);
+                // 可能复制到根目录
+                targetFile = targetId == 0? PndFile.ROOT_PND_FILE: targetFile;
+                if (Objects.isNull(targetFile) || !SystemConstants.FileType.FOLDER.toString().equals(targetFile.getType())){
+                    continue;
                 }
 
-                final int finalNum = num;
-                updateResourceLink(file.getResourceId(), new ResourceLinkOperation() {
-                    @Override
-                    public long operate(long originVal) {
-                        return originVal + finalNum;
-                    }
-                });
-                return Boolean.TRUE;
+                PndFile copyFile = new PndFile();
+                copyFile.setName(file.getName());
+                copyFile.setParentId(targetId);
+                copyFile.setType(file.getType());
+                copyFile.setResourceId(file.getResourceId());
+                fileDao.save(copyFile);
+                num++;
             }
+
+            final int finalNum = num;
+            updateResourceLink(file.getResourceId(), originVal -> originVal + finalNum);
+            return Boolean.TRUE;
         });
     }
 
@@ -211,12 +195,9 @@ public class FileServiceImpl implements FileService {
      * @param file
      */
     private void deleteCommonFile(PndFile file){
-        transactionTemplate.execute(new TransactionCallback<Boolean>() {
-            @Override
-            public Boolean doInTransaction(TransactionStatus transactionStatus) {
-                deleteCommonFile0(file);
-                return Boolean.TRUE;
-            }
+        transactionTemplate.execute((transactionStatus) -> {
+            deleteCommonFile0(file);
+            return Boolean.TRUE;
         });
     }
 
@@ -231,12 +212,7 @@ public class FileServiceImpl implements FileService {
         }
 
         fileDao.deleteFile(file.getId());
-        updateResourceLink(file.getResourceId(), new ResourceLinkOperation() {
-            @Override
-            public long operate(long originVal) {
-                return originVal - 1;
-            }
-        });
+        updateResourceLink(file.getResourceId(), originVal -> originVal - 1);
     }
 
     private void updateResourceLink(long id, ResourceLinkOperation rlo){

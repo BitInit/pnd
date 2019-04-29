@@ -19,7 +19,7 @@ public class SystemConstants {
         /**
          * 文件类型，例如FOLDER表示文件夹
          */
-        DEFAULT, FOLDER, PDF, COMPRESS_FILE, VIDEO, PICTURE;
+        DEFAULT, FOLDER, PDF, COMPRESS_FILE, VIDEO, AUDIO, PICTURE, DOC, PPT, TXT, TORRENT;
 
         @Override
         public String toString() {
@@ -53,12 +53,37 @@ public class SystemConstants {
         // compress_file
         fileTypeAccordingToSuffix.put(".tar.gz", FileType.COMPRESS_FILE);
         fileTypeAccordingToSuffix.put(".zip", FileType.COMPRESS_FILE);
+        fileTypeAccordingToSuffix.put(".7z", FileType.COMPRESS_FILE);
+        fileTypeAccordingToSuffix.put(".rar", FileType.COMPRESS_FILE);
 
         // video
         fileTypeAccordingToSuffix.put(".mp4", FileType.VIDEO);
         fileTypeAccordingToSuffix.put(".flv", FileType.VIDEO);
+        fileTypeAccordingToSuffix.put(".rmvb", FileType.VIDEO);
+        fileTypeAccordingToSuffix.put(".avi", FileType.VIDEO);
+        fileTypeAccordingToSuffix.put(".mkv", FileType.PICTURE);
+
+        // audio
+        fileTypeAccordingToSuffix.put(".mp3", FileType.AUDIO);
 
         // picture
         fileTypeAccordingToSuffix.put(".png", FileType.PICTURE);
+        fileTypeAccordingToSuffix.put(".jpg", FileType.PICTURE);
+        fileTypeAccordingToSuffix.put(".jpeg", FileType.PICTURE);
+        fileTypeAccordingToSuffix.put(".gif", FileType.PICTURE);
+
+        // doc
+        fileTypeAccordingToSuffix.put(".doc", FileType.DOC);
+        fileTypeAccordingToSuffix.put(".docx", FileType.DOC);
+
+        // txt
+        fileTypeAccordingToSuffix.put(".txt", FileType.TXT);
+
+        // ppt
+        fileTypeAccordingToSuffix.put(".ppt", FileType.PPT);
+        fileTypeAccordingToSuffix.put(".pptx", FileType.PPT);
+
+        // torrent
+        fileTypeAccordingToSuffix.put(".torrent", FileType.TORRENT);
     }
 }

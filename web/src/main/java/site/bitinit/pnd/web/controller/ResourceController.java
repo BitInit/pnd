@@ -40,7 +40,7 @@ public class ResourceController {
         return ResponseUtils.ok(resourceService.resourceExists(fingerPrint));
     }
 
-    @PostMapping("/rs/upload")
+    @PostMapping("/rs")
     public void resourceUpload(String clientId, Long resourceId, @RequestParam("file") MultipartFile file,
                                          HttpServletRequest request) throws IOException {
         Assert.notEmpty(clientId, "客户端id不能为空");
@@ -50,9 +50,9 @@ public class ResourceController {
         resourceService.fileUpload(clientId, resourceId, file.getInputStream(), request);
     }
 
-    @PutMapping("/rs")
-    public ResponseEntity pauseFileUpload(String client, Long resourceId){
-        resourceService.pauseResource(client, resourceId);
+    @PutMapping("/rs/state")
+    public ResponseEntity pauseFileUpload(String clientId, Long resourceId){
+        resourceService.pauseResource(clientId, resourceId);
         return ResponseUtils.ok("");
     }
 }

@@ -96,32 +96,29 @@ public class ResourceServiceImpl implements ResourceService {
         resource.setPath(pathUtils.getResourceSubfolder());
         resource.setSize(size);
 
-        Long id = transactionTemplate.execute(new TransactionCallback<Long>() {
-            @Override
-            public Long doInTransaction(TransactionStatus transactionStatus) {
-                long id = resourceDao.save(resource);
-                resource.setId(id);
+        Long id = transactionTemplate.execute(transactionStatus -> {
+            long resourceId = resourceDao.save(resource);
+            resource.setId(resourceId);
 
-                File pathFile = new File(pathUtils.getResourceAbsolutionPath(resource.getPath()));
-                File file = new File(pathFile, resource.getUuid() + CommonUtils.extractFileExtensionName(fileName));
-                try {
-                    if (!pathFile.exists()){
-                        pathFile.mkdirs();
-                    }
-                    file.createNewFile();
-                    PndResourceState.PndResourceStateBuilder builder = PndResourceState.builder();
-                    builder.fileName(fileName)
-                            .parentId(parentId)
-                            .file(file)
-                            .pndResource(resource);
-
-                    cacheService.addResource(clientId, id, builder);
-                } catch (IOException e) {
-                    logger.error("create " + fileName + " error");
-                    throw new PndException();
+            File pathFile = new File(pathUtils.getResourceAbsolutionPath(resource.getPath()));
+            File file = new File(pathFile, resource.getUuid() + CommonUtils.extractFileExtensionName(fileName));
+            try {
+                if (!pathFile.exists()){
+                    pathFile.mkdirs();
                 }
-                return id;
+                file.createNewFile();
+                PndResourceState.PndResourceStateBuilder builder = PndResourceState.builder();
+                builder.fileName(fileName)
+                        .parentId(parentId)
+                        .file(file)
+                        .pndResource(resource);
+
+                cacheService.addResource(clientId, resourceId, builder);
+            } catch (IOException e) {
+                logger.error("create " + fileName + " error");
+                throw new PndException();
             }
+            return resourceId;
         });
 
         Map<String, Object> result =new HashMap<>(1);
