@@ -29,4 +29,5 @@ public class Assert {
             throw new IllegalDataException(msg);
         }
     }
+
 }

@@ -31,13 +31,13 @@ public interface ResourceService {
     /**
      * 预处理文件上传
      * @param clientId
-     * @param fingerPrint
+     * @param md5
      * @param size
      * @param parentId
      * @param fileName
      * @return
      */
-    Map<String, Object> prepareFileUpload(String clientId, String fingerPrint, Long size, Long parentId, String fileName);
+    Map<String, Object> prepareFileUpload(String clientId, String md5, Long size, Long parentId, String fileName);
 
     /**
      * 更新资源状态
@@ -56,9 +56,11 @@ public interface ResourceService {
     void fileUpload(String clientId, Long resourceId, InputStream is, HttpServletRequest request);
 
     /**
-     * 中断文件上传
+     * 中断/恢复 文件上传
      * @param clientId
      * @param resourceId
+     * @param type
      */
-    void pauseResource(String clientId, Long resourceId);
+    void changeResourceState(String clientId, Long resourceId, String type);
+
 }

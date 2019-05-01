@@ -49,7 +49,7 @@ public class PersistResourceService {
             byte[] buffer = new byte[BUFFER_SIZE];
             int bytesRead = inputStream.read(buffer);
             if (bytesRead != -1){
-                state.getOutputStream().write(buffer);
+                state.getOutputStream().write(buffer, 0, bytesRead);
                 state.addFinishedUploadBytes(bytesRead);
 
                 resourcePersistPools.submit(this);

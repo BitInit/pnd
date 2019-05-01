@@ -39,10 +39,10 @@ public class ResourceDao {
         return daoUtils.queryForObject(sql, RESOURCE_ROW_MAPPER, id);
     }
 
-    public PndResource findByFingerPrint(String crc, SystemConstants.ResourceState state){
-        String sql = "select " + RESOURCE_ALL_FIELDS + " from " + RESOURCE_TABLE_NAME + " where finger_print = ? and status = ?";
-        logger.debug("[resource query] crc-{} {}", crc, sql);
-        List<PndResource> resources = daoUtils.queryForList(sql, RESOURCE_ROW_MAPPER, crc, state.name());
+    public PndResource findByFingerPrint(String md5, SystemConstants.ResourceState state){
+        String sql = "select " + RESOURCE_ALL_FIELDS + " from " + RESOURCE_TABLE_NAME + " where md5 = ? and status = ?";
+        logger.debug("[resource query] md5-{} {}", md5, sql);
+        List<PndResource> resources = daoUtils.queryForList(sql, RESOURCE_ROW_MAPPER, md5, state.name());
         if (!Objects.isNull(resources) && resources.size() >= 1){
             return resources.get(0);
         }
@@ -50,22 +50,19 @@ public class ResourceDao {
      }
 
      public long save(PndResource resource){
-        String sql = "insert into " + RESOURCE_TABLE_NAME + " (size, path, uuid, gmt_create, gmt_modified, status, finger_print) "
+        String sql = "insert into " + RESOURCE_TABLE_NAME + " (size, path, uuid, gmt_create, gmt_modified, status, md5) "
                 + "values (?, ?, ?, ?, ?, ?, ?)";
          KeyHolder keyHolder = new GeneratedKeyHolder();
-         jdbcTemplate.update(new PreparedStatementCreator() {
-             @Override
-             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                 PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                 ps.setLong(1, resource.getSize());
-                 ps.setString(2, resource.getPath());
-                 ps.setString(3, resource.getUuid());
-                 ps.setString(4, CommonUtils.formatDate(new Date(resource.getGmtCreate())));
-                 ps.setString(5, CommonUtils.formatDate(new Date(resource.getGmtModified())));
-                 ps.setString(6, resource.getStatus());
-                 ps.setString(7, resource.getFingerPrint());
-                 return ps;
-             }
+         jdbcTemplate.update(con -> {
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+             ps.setLong(1, resource.getSize());
+             ps.setString(2, resource.getPath());
+             ps.setString(3, resource.getUuid());
+             ps.setString(4, CommonUtils.formatDate(new Date(resource.getGmtCreate())));
+             ps.setString(5, CommonUtils.formatDate(new Date(resource.getGmtModified())));
+             ps.setString(6, resource.getStatus());
+             ps.setString(7, resource.getMd5());
+             return ps;
          }, keyHolder);
 
         return keyHolder.getKey().longValue();
@@ -84,7 +81,7 @@ public class ResourceDao {
     }
 
     public static final String RESOURCE_TABLE_NAME = " pnd_resource ";
-    private static final String RESOURCE_ALL_FIELDS = " id, size, path, uuid, gmt_create, gmt_modified, status, finger_print, link ";
+    private static final String RESOURCE_ALL_FIELDS = " id, size, path, uuid, gmt_create, gmt_modified, status, md5, link ";
     private static final ResourceRowMapper RESOURCE_ROW_MAPPER = new ResourceRowMapper();
     static class ResourceRowMapper implements RowMapper<PndResource> {
 
@@ -98,7 +95,7 @@ public class ResourceDao {
             resource.setGmtCreate(rs.getTimestamp("gmt_create").getTime());
             resource.setGmtModified(rs.getTimestamp("gmt_modified").getTime());
             resource.setStatus(rs.getString("status"));
-            resource.setFingerPrint(rs.getString("finger_print"));
+            resource.setMd5(rs.getString("md5"));
             resource.setLink(rs.getInt("link"));
             return resource;
         }

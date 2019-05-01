@@ -79,14 +79,14 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public Map<String, Object> prepareFileUpload(String clientId, String fingerPrint, Long size, Long parentId, String fileName) {
-        Assert.notEmpty(fingerPrint, "文件指纹不能为空");
+    public Map<String, Object> prepareFileUpload(String clientId, String md5, Long size, Long parentId, String fileName) {
+        Assert.notEmpty(md5, "文件md5不能为空");
         Assert.notEmpty(clientId, "客户端id不能为空");
         Assert.notNull(size, "size不能为空");
         Assert.notEmpty(fileName, "文件名不能为空");
 
         PndResource resource = new PndResource();
-        resource.setFingerPrint(fingerPrint);
+        resource.setMd5(md5);
         resource.setStatus(SystemConstants.ResourceState.pending.toString());
         resource.setUuid(CommonUtils.uuid());
         long currentTime = System.currentTimeMillis();
@@ -135,7 +135,6 @@ public class ResourceServiceImpl implements ResourceService {
     public void fileUpload(String clientId, Long resourceId
             , InputStream is, HttpServletRequest request) {
         PndResourceState state = cacheService.getResourceState(clientId, resourceId);
-        state.setPaused(false);
 
         final AsyncContext context = request.startAsync();
         context.addListener(new UploadAsyncListener(state));
@@ -175,15 +174,21 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public void pauseResource(String clientId, Long resourceId) {
+    public void changeResourceState(String clientId, Long resourceId, String type) {
         Assert.notEmpty(clientId, "客户端id不能为空");
         Assert.notNull(resourceId);
+        if (!PndResourceState.PAUSE.equals(type) && !PndResourceState.RESUME.equals(type)){
+            throw new IllegalDataException("type must be pause or resume");
+        }
 
         PndResourceState state = cacheService.getResourceState(clientId, resourceId);
         if (state == null){
             throw new IllegalDataException("没有 resourceId=" + resourceId + "的文件正在上传");
-        } else {
+        }
+        if (PndResourceState.PAUSE.equals(type)){
             state.setPaused(true);
+        } else {
+            state.setPaused(false);
         }
     }
 

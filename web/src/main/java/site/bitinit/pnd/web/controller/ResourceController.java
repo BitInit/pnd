@@ -30,9 +30,9 @@ public class ResourceController {
     }
 
     @PostMapping("/rs/preparation")
-    public ResponseEntity prepareFileUpload(String clientId, String fileFingerPrint,
+    public ResponseEntity prepareFileUpload(String clientId, String md5,
                                   Long size, long parentId, String fileName){
-        return ResponseUtils.ok(resourceService.prepareFileUpload(clientId, fileFingerPrint, size, parentId, fileName));
+        return ResponseUtils.ok(resourceService.prepareFileUpload(clientId, md5, size, parentId, fileName));
     }
 
     @GetMapping("/rs/fingerPrint")
@@ -51,8 +51,9 @@ public class ResourceController {
     }
 
     @PutMapping("/rs/state")
-    public ResponseEntity pauseFileUpload(String clientId, Long resourceId){
-        resourceService.pauseResource(clientId, resourceId);
+    public ResponseEntity pauseFileUpload(String clientId, Long resourceId, String type){
+        resourceService.changeResourceState(clientId, resourceId, type);
         return ResponseUtils.ok("");
     }
+
 }

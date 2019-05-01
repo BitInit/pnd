@@ -11,8 +11,11 @@ import java.io.*;
  */
 public class PndResourceState extends PndResource {
 
+    public static final String PAUSE = "pause";
+    public static final String RESUME = "resume";
+
     private long finishedUploadBytes = 0;
-    private volatile boolean paused = false;
+    private boolean paused = false;
     private String fileName;
     private long parentId;
     private File file;
@@ -41,11 +44,11 @@ public class PndResourceState extends PndResource {
         this.finishedUploadBytes += bytes;
     }
 
-    public boolean isPaused() {
+    public synchronized boolean isPaused() {
         return paused;
     }
 
-    public void setPaused(boolean paused) {
+    public synchronized void setPaused(boolean paused) {
         this.paused = paused;
     }
 
@@ -84,7 +87,7 @@ public class PndResourceState extends PndResource {
     private void fillData(PndResourceStateBuilder builder){
         setId(builder.id);
         setLink(builder.link);
-        setFingerPrint(builder.fingerPrint);
+        setMd5(builder.md5);
         setGmtModified(builder.gmtModified);
         setGmtCreate(builder.gmtCreate);
         setPath(builder.path);
@@ -114,7 +117,7 @@ public class PndResourceState extends PndResource {
         Long size;
         String path;
         String uuid;
-        String fingerPrint;
+        String md5;
         SystemConstants.ResourceState status;
         Long gmtCreate;
         Long gmtModified;
@@ -129,7 +132,7 @@ public class PndResourceState extends PndResource {
             this.size = resource.getSize();
             this.path = resource.getPath();
             this.uuid = resource.getUuid();
-            this.fingerPrint = resource.getFingerPrint();
+            this.md5 = resource.getMd5();
             this.status = SystemConstants.ResourceState.valueOf(resource.getStatus());
             this.gmtCreate = resource.getGmtCreate();
             this.gmtModified = resource.getGmtModified();
@@ -157,8 +160,8 @@ public class PndResourceState extends PndResource {
             return this;
         }
 
-        public PndResourceStateBuilder fingerPrint(String fingerPrint){
-            this.fingerPrint = fingerPrint;
+        public PndResourceStateBuilder md5(String md5){
+            this.md5 = md5;
             return this;
         }
 

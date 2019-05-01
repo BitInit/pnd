@@ -19,7 +19,9 @@ public class SystemConstants {
         /**
          * 文件类型，例如FOLDER表示文件夹
          */
-        DEFAULT, FOLDER, PDF, COMPRESS_FILE, VIDEO, AUDIO, PICTURE, DOC, PPT, TXT, TORRENT;
+        DEFAULT, FOLDER, PDF, COMPRESS_FILE,
+        VIDEO, AUDIO, PICTURE, DOC, PPT, TXT,
+        TORRENT, WEB, CODE;
 
         @Override
         public String toString() {
@@ -71,6 +73,7 @@ public class SystemConstants {
         fileTypeAccordingToSuffix.put(".jpg", FileType.PICTURE);
         fileTypeAccordingToSuffix.put(".jpeg", FileType.PICTURE);
         fileTypeAccordingToSuffix.put(".gif", FileType.PICTURE);
+        fileTypeAccordingToSuffix.put(".ico", FileType.PICTURE);
 
         // doc
         fileTypeAccordingToSuffix.put(".doc", FileType.DOC);
@@ -85,5 +88,19 @@ public class SystemConstants {
 
         // torrent
         fileTypeAccordingToSuffix.put(".torrent", FileType.TORRENT);
+
+        // web
+        fileTypeAccordingToSuffix.put(".html", FileType.WEB);
+        fileTypeAccordingToSuffix.put(".htm", FileType.WEB);
+
+        // code
+        fileTypeAccordingToSuffix.put(".js", FileType.CODE);
+        fileTypeAccordingToSuffix.put(".json", FileType.CODE);
+        fileTypeAccordingToSuffix.put(".java", FileType.CODE);
+        fileTypeAccordingToSuffix.put(".c", FileType.CODE);
+        fileTypeAccordingToSuffix.put(".cpp", FileType.CODE);
+        fileTypeAccordingToSuffix.put(".h", FileType.CODE);
+        fileTypeAccordingToSuffix.put(".py", FileType.CODE);
+        fileTypeAccordingToSuffix.put(".go", FileType.CODE);
     }
 }
