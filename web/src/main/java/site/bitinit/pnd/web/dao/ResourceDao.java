@@ -3,6 +3,7 @@ package site.bitinit.pnd.web.dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
@@ -78,6 +79,32 @@ public class ResourceDao {
         String sql = "update " + RESOURCE_TABLE_NAME + " set link = ?, gmt_modified = ? " +
                 " where id = ? and link = ?";
         return jdbcTemplate.update(sql, val, CommonUtils.formatDate(), id, expected);
+    }
+
+    public List<PndResource> findDirtyResources(){
+        String sql = "select " + RESOURCE_ALL_FIELDS + " from " + RESOURCE_TABLE_NAME + " where status = ? or (status = ? and link = ?)";
+        return daoUtils.queryForList(sql, RESOURCE_ROW_MAPPER, SystemConstants.ResourceState.pending.name(),
+                SystemConstants.ResourceState.succeeded.name(), 0);
+    }
+
+    public void delete(long resourceId){
+        String sql = "delete from " + RESOURCE_TABLE_NAME + " where id=?";
+        jdbcTemplate.update(sql, resourceId);
+    }
+
+    public void deleteBatch(List<Long> resourceIds){
+        String sql = "delete from " + RESOURCE_TABLE_NAME + " where id=?";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, resourceIds.get(i));
+            }
+
+            @Override
+            public int getBatchSize() {
+                return resourceIds.size();
+            }
+        });
     }
 
     public static final String RESOURCE_TABLE_NAME = " pnd_resource ";

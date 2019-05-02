@@ -55,7 +55,7 @@ public class Properties {
         setDbMaxActive(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_MAX_ACTIVE, "20")));
         setDbMaxIdle(Integer.parseInt(getEnvProperty(EnvironmentConstants.DB_MAX_IDLE, "50")));
 
-        setMaxConcurrentUploadNumbers(Integer.parseInt(getEnvProperty(EnvironmentConstants.MAX_CONCURRENT_UPLOAD_NUMBERS, "1")));
+        setMaxConcurrentUploadNumbers(Integer.parseInt(getEnvProperty(EnvironmentConstants.MAX_CONCURRENT_UPLOAD_NUMBERS, "3")));
         setMaxFileUploadSize(getEnvProperty(EnvironmentConstants.MAX_FILE_UPLOAD_SIZE, "12MB"));
         setMaxRequestSize(getEnvProperty(EnvironmentConstants.MAX_REQUEST_SIZE, "15MB"));
         // 10MB

@@ -1,5 +1,6 @@
 package site.bitinit.pnd.web.service;
 
+import org.springframework.core.io.Resource;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.controller.dto.ResourceConfigDto;
 import site.bitinit.pnd.web.controller.dto.ResourceUploadResponseDto;
@@ -63,4 +64,5 @@ public interface ResourceService {
      */
     void changeResourceState(String clientId, Long resourceId, String type);
 
+    Resource loadResource(Long resourceId);
 }

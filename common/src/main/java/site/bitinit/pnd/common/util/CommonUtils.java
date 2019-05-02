@@ -24,8 +24,6 @@ public class CommonUtils {
         return f.format(date);
     }
 
-
-
     public static String uuid(){
         return UUID.randomUUID().toString().replaceAll("-", "");
     }

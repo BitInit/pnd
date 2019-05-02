@@ -63,7 +63,7 @@ public class SystemConstants {
         fileTypeAccordingToSuffix.put(".flv", FileType.VIDEO);
         fileTypeAccordingToSuffix.put(".rmvb", FileType.VIDEO);
         fileTypeAccordingToSuffix.put(".avi", FileType.VIDEO);
-        fileTypeAccordingToSuffix.put(".mkv", FileType.PICTURE);
+        fileTypeAccordingToSuffix.put(".mkv", FileType.VIDEO);
 
         // audio
         fileTypeAccordingToSuffix.put(".mp3", FileType.AUDIO);

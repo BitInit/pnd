@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>site.bitinit.pnd</groupId>
     <artifactId>pnd-all</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0.RC</version>
     <name>pnd-all</name>
     <description>Personal Network Disk</description>
     <packaging>pom</packaging>

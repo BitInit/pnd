@@ -1,6 +1,12 @@
 package site.bitinit.pnd.web.controller;
 
+import org.apache.catalina.connector.ClientAbortException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import site.bitinit.pnd.common.ResponseEntity;
@@ -9,9 +15,11 @@ import site.bitinit.pnd.common.util.ResponseUtils;
 import site.bitinit.pnd.web.config.SystemConstants;
 import site.bitinit.pnd.web.service.ResourceService;
 
-import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Objects;
 
 /**
  * @author: john
@@ -20,6 +28,8 @@ import java.io.IOException;
 @RestController
 @RequestMapping(SystemConstants.API_VERSION)
 public class ResourceController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResourceController.class);
 
     @Autowired
     private ResourceService resourceService;
@@ -56,4 +66,28 @@ public class ResourceController {
         return ResponseUtils.ok("");
     }
 
+    @GetMapping("/rs/{resourceId}")
+    public org.springframework.http.ResponseEntity<Resource> downloadFile(@PathVariable Long resourceId, String fileName, HttpServletRequest request) throws UnsupportedEncodingException {
+        Resource resource = resourceService.loadResource(resourceId);
+
+        String contentType = null;
+        try {
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (Objects.isNull(contentType)){
+            contentType = "application/octet-stream";
+        }
+
+        return org.springframework.http.ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, "UTF-8"))
+                .body(resource);
+    }
+
+    @ExceptionHandler
+    public void clientAbortException(ClientAbortException e){
+        logger.warn("client cancelled file download {}", e.getMessage());
+    }
 }

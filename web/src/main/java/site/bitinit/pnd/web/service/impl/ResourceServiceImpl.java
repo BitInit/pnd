@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -28,6 +30,8 @@ import site.bitinit.pnd.web.utils.PathUtils;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -88,7 +92,7 @@ public class ResourceServiceImpl implements ResourceService {
         PndResource resource = new PndResource();
         resource.setMd5(md5);
         resource.setStatus(SystemConstants.ResourceState.pending.toString());
-        resource.setUuid(CommonUtils.uuid());
+        resource.setUuid(CommonUtils.uuid()+ CommonUtils.extractFileExtensionName(fileName));
         long currentTime = System.currentTimeMillis();
         resource.setGmtCreate(currentTime);
         resource.setGmtModified(currentTime);
@@ -101,7 +105,7 @@ public class ResourceServiceImpl implements ResourceService {
             resource.setId(resourceId);
 
             File pathFile = new File(pathUtils.getResourceAbsolutionPath(resource.getPath()));
-            File file = new File(pathFile, resource.getUuid() + CommonUtils.extractFileExtensionName(fileName));
+            File file = new File(pathFile, resource.getUuid());
             try {
                 if (!pathFile.exists()){
                     pathFile.mkdirs();
@@ -189,6 +193,30 @@ public class ResourceServiceImpl implements ResourceService {
             state.setPaused(true);
         } else {
             state.setPaused(false);
+        }
+    }
+
+    @Override
+    public Resource loadResource(Long resourceId) {
+        Assert.notNull(resourceId, "资源id不能为空");
+
+        PndResource pndResource = resourceDao.findById(resourceId);
+        if (Objects.isNull(pndResource)){
+            throw new IllegalDataException("没有该文件");
+        }
+
+        try {
+            Path filePath = new File(pathUtils.getResourceAbsolutionPath(pndResource.getPath() + File.separator + pndResource.getUuid())).toPath();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists()){
+                return resource;
+            } else {
+                throw new IllegalDataException("没有该文件");
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            throw new IllegalDataException("没有该文件");
         }
     }
 

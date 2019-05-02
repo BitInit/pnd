@@ -61,5 +61,9 @@
             <source>../web/target/pnd-web.jar</source>
             <outputDirectory>/lib/</outputDirectory>
         </file>
+        <file>
+            <source>Dockerfile</source>
+            <destName>Dockerfile</destName>
+        </file>
     </files>
 </assembly>
