@@ -7,4 +7,4 @@ RUN echo "Asia/Shanghai" > /etc/timezone
 
 EXPOSE 8989
 VOLUME /pnd/data
-ENTRYPOINT ["bin/startup.sh"]
+ENTRYPOINT ["bin/docker-startup.sh"]

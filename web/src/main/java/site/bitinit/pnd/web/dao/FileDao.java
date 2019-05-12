@@ -48,6 +48,15 @@ public class FileDao {
         return daoUtils.queryForList(sql, FILE_ROW_MAPPER, id, SystemConstants.FileType.FOLDER.toString());
     }
 
+    public Long findNumByType(SystemConstants.FileType type){
+        String sql = "select count(id) as typeNum from " + FILE_TABLE_NAME;
+        if (type != null){
+            sql += " where type = '" + type.toString() + "'";
+        }
+        logger.debug("[file query] {}", sql);
+        return jdbcTemplate.queryForObject(sql, (ResultSet rs, int rowNum) -> rs.getLong("typeNum"));
+    }
+
     public void createFolder(long parentId, String name){
         String sql = "insert into " + FILE_TABLE_NAME + "(name, parent_id, type, gmt_create, gmt_modified) values "
                     + "(?, ?, ?, ?, ?)";

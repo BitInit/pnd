@@ -3,10 +3,7 @@ package site.bitinit.pnd.web.dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -105,6 +102,11 @@ public class ResourceDao {
                 return resourceIds.size();
             }
         });
+    }
+
+    public Long findFileNum(){
+        String sql = "select count(id) as fileNum from " + RESOURCE_TABLE_NAME;
+        return jdbcTemplate.queryForObject(sql, (ResultSet rs, int rowNum) -> rs.getLong("fileNum"));
     }
 
     public static final String RESOURCE_TABLE_NAME = " pnd_resource ";

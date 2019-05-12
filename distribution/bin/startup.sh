@@ -10,6 +10,5 @@ if [ ! -d "${PND_HOME}/data/logs" ]; then
     mkdir -p ${PND_HOME}/data/logs
 fi
 
-#echo "nohup java ${JAVA_OPTS} > ${PND_HOME}/logs/pnd-start.log 2>&1 &"
-#nohup java ${JAVA_OPTS} > ${PND_HOME}/data/logs/pnd-start.log 2>&1 < /dev/null
-java ${JAVA_OPTS}
+echo "starting pnd..."
+nohup java ${JAVA_OPTS} > ${PND_HOME}/data/logs/pnd-start.log 2>&1 < /dev/null
