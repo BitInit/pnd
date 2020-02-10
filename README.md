@@ -8,17 +8,30 @@
 
 ## 功能
 - [x] 文件及文件夹：增/删/重命名/移动/复制
-- [x] 大文件的分块上传，支持文件上传的暂停/恢复；文件上传 md5 校验，如果系统存在该文件，可实现文件的秒传
-- [x] 文件下载，部分视频的浏览器简单播放(临时功能)
-- [ ] 视频在线播放 (开发中...)
-- [ ] 远程资源后台下载
+- [x] 大文件的分块上传，支持文件上传的暂停/恢复
+- [x] 文件下载，部分视频的浏览器简单播放
+- [ ] 文件 md5 校验，实现文件快速上传
+- [ ] 视频在线转码播放
+- [ ] 互联网资源服务器后台下载
+- [ ] 互联网视频在线播放(整合各个视频网站，不用在去找各种视频种子)
 - [ ] ......
 
 ## 下载源码或安装包
+### 容器部署(推荐)
+
+``` sh
+docker run -d -p 8989:8989 -v [YourOwnPath]:/pnd/data bitinit/pnd
+
+# 浏览器访问：http://<ip>:8989
+```
+
+### 直接下载二进制包
+[选择最新的二进制包](https://github.com/BitInit/pnd/releases)
+
 ### 源码构建
 
 ``` sh
-git clone https://github.com/BitInit/pnd.git
+git clone git@github.com:BitInit/pnd.git 
 
 cd pnd
 mvn clean package
@@ -28,17 +41,4 @@ mvn clean package
 bin/startup.sh
 
 # 浏览器访问：http://localhost:8989
-```
-
-### 直接下载二进制包
-[选择最新的二进制包](https://github.com/BitInit/pnd/releases)
-
-### docker
-
-``` sh
-docker pull bitinit/pnd
-
-docker run -d -p 8989:8989 -v [YourOwnPath]:/pnd/data bitinit/pnd
-
-# 浏览器访问：http://<ip>:8989
 ```
