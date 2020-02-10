@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="site.bitinit.pnd.web.dao.FileMapper">
+
+    <sql id="fileFields">
+        ${alias}.id, ${alias}.file_name, ${alias}.parent_id, ${alias}.type, ${alias}.resource_id, ${alias}.create_time, ${alias}.update_time
+    </sql>
+    <sql id="sizeField">
+        ${alias}.size
+    </sql>
+
+    <select id="findById" resultType="file">
+        SELECT
+          <include refid="fileFields"><property name="alias" value="f" /></include>
+        FROM file f
+        WHERE f.id = #{id}
+    </select>
+
+    <select id="findByParentId" resultType="file">
+        SELECT
+          <include refid="fileFields"><property name="alias" value="f" /></include>,
+          <include refid="sizeField"><property name="alias" value="r" /></include>
+        FROM file f LEFT JOIN resource r ON f.resource_id = r.id
+        WHERE f.parent_id = #{parentId}
+        <if test="sort">
+            ORDER BY f.id
+        </if>
+    </select>
+
+    <select id="findByParentIdForUpdate" resultType="file">
+        SELECT
+          <include refid="fileFields"><property name="alias" value="f" /></include>
+        FROM file f
+        WHERE  f.parent_id = #{parentId}
+        FOR UPDATE
+    </select>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="file">
+        INSERT INTO
+          file (file_name, parent_id, type, resource_id, create_time, update_time)
+        VALUES (#{fileName}, #{parentId}, #{type}, #{resourceId, jdbcType=BIGINT}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update" parameterType="file">
+        UPDATE file
+        SET
+        <if test="parentId != null">
+            parentId = #{parentId},
+        </if>
+        <if test="fileName != null">
+            file_name = #{fileName},
+        </if>
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateParentId">
+        UPDATE file
+        <set>
+            parent_id = #{parentId},
+            update_time = #{updateTime}
+        </set>
+        WHERE id IN
+        <foreach collection="ids" index="index" open="(" close=")" item="item" separator=",">
+            #{item}
+        </foreach>
+    </update>
+    
+    <delete id="deleteByIds" parameterType="long">
+        DELETE FROM file
+        WHERE 1 > 2 OR id IN
+        <foreach collection="ids" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="getAllFileType" resultType="file">
+        SELECT id, type FROM file
+    </select>
+</mapper>

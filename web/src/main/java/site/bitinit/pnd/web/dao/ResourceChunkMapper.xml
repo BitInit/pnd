@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="site.bitinit.pnd.web.dao.ResourceChunkMapper">
+
+
+    <select id="findByIdentifierAndChunkNumber" resultType="resourceChunk">
+        SELECT *
+        FROM resource_chunk
+        WHERE identifier = #{identifier} AND chunk_number = #{chunkNumber}
+    </select>
+
+    <insert id="save" parameterType="resourceChunk">
+        INSERT INTO resource_chunk
+          (chunk_number, chunk_size, current_chunk_size, total_size, identifier, filename, relative_path, total_chunks, create_time, update_time)
+        VALUES (#{chunkNumber}, #{chunkSize}, #{currentChunkSize}, #{totalSize}, #{identifier}, #{filename}, #{relativePath}, #{totalChunks}, #{createTime}, #{updateTime})
+    </insert>
+
+    <delete id="deleteChunk">
+        DELETE FROM resource_chunk
+        WHERE identifier = #{identifier}
+    </delete>
+</mapper>

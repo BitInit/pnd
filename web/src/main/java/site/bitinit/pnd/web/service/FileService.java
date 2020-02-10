@@ -1,67 +1,78 @@
 package site.bitinit.pnd.web.service;
 
-import site.bitinit.pnd.web.controller.dto.FileDetailDto;
-import site.bitinit.pnd.web.model.PndFile;
+import org.springframework.core.io.Resource;
+import site.bitinit.pnd.web.controller.dto.ResponseDto;
+import site.bitinit.pnd.web.entity.File;
 
 import java.util.List;
 
 /**
- * @author: john
- * @date: 2019/4/3
+ * @author john
+ * @date 2020-01-11
  */
 public interface FileService {
 
     /**
-     * 获取文件列表
-     * @param parentId
-     * @return
+     * 根据parentId返回文件
+     * @param parentId parentId
+     * @return list
      */
-    List<FileDetailDto> getFileList(long parentId);
+    ResponseDto findByParentId(Long parentId);
 
     /**
-     * 创建新文件夹
-     * @param parentId
-     * @param folderName
+     * 根据id返回文件
+     * @param fileId fileId
+     * @return file response
      */
-    void createFolder(long parentId, String folderName);
+    ResponseDto findByFileId(Long fileId);
 
     /**
      * 创建文件
-     * @param file
+     * @param file file
      */
-    void createFile(PndFile file);
+    void createFile(File file);
 
     /**
-     * 文件重命名
-     * @param id
-     * @param fileName
+     * 更新文件
+     * @param fileName 文件名
+     * @param id 文件id
      */
-    void renameFile(long id, String fileName);
+    void renameFile(String fileName, Long id);
 
     /**
-     * 删除文件
-     * @param id
+     * 文件移动
+     * @param ids ids
+     * @param targetId 目标文件夹
      */
-    void deleteFile(long id);
+    void moveFiles(List<Long> ids, Long targetId);
 
     /**
-     * 获取子文件夹
-     * @param id
-     * @return
+     * 文件复制
+     * @param fileIds fileIds
+     * @param targetIds targetIds
      */
-    List<PndFile> getSubfolder(long id);
+    void copyFiles(List<Long> fileIds, List<Long> targetIds);
 
     /**
-     * 移动文件
-     * @param id
-     * @param targetId
+     * 删除文件及其子文件
+     * @param ids 文件id
      */
-    void moveFile(long id, long targetId);
+    void deleteFiles(List<Long> ids);
 
     /**
-     * 复制文件
-     * @param id
-     * @param targetIds
+     * 加载资源，下载
+     * @param fileId fileId
+     * @return resource
      */
-    void copyFile(long id, Long[] targetIds);
+    ResourceWrapper loadResource(Long fileId);
+
+    class ResourceWrapper{
+        public Resource resource;
+        public File file;
+
+        public ResourceWrapper(Resource resource, File file) {
+            this.resource = resource;
+            this.file = file;
+        }
+    }
 }

@@ -8,4 +8,4 @@ fi
 
 echo "kill pnd server..."
 kill $pid
-echo "success kill server at ${pid}"
+echo "success kill server at pid:${pid}"

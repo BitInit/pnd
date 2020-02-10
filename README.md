@@ -42,19 +42,3 @@ docker run -d -p 8989:8989 -v [YourOwnPath]:/pnd/data bitinit/pnd
 
 # 浏览器访问：http://<ip>:8989
 ```
-
-## 项目演示
-#### 文件夹管理
-文件夹创建、文件重命名、移动、删除
-
-![folder](doc/image/folder_manage.gif)
-
-#### 大文件分块上传
-计算文件校验码，如果系统有该文件实现快速上传，如果没有就上传该大文件
-
-![fileUpload](doc/image/file_upload.gif)
-
-#### 文件下载，部分视频简单播放
-![fileDownload](doc/image/file_download.gif)
-
-#### 其他功能 待续

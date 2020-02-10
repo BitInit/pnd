@@ -1,98 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>site.bitinit.pnd</groupId>
-    <artifactId>pnd-all</artifactId>
-    <version>1.0.0.RC</version>
-    <name>pnd-all</name>
-    <description>Personal Network Disk</description>
-    <packaging>pom</packaging>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>site.bitinit.pnd</groupId>
+  <artifactId>pnd-all</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-    </properties>
+  <modules>
+    <module>web</module>
+    <module>distribution</module>
+  </modules>
 
-    <modules>
-        <module>common</module>
-        <module>web</module>
-        <module>distribution</module>
-    </modules>
+  <name>pnd-all</name>
+  <url>https://github.com/BitInit/pnd</url>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <!-- Import dependency management from Spring Boot -->
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.1.3.RELEASE</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
 
-            <dependency>
-                <groupId>site.bitinit.pnd</groupId>
-                <artifactId>pnd-web</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+    <mybatis.version>3.5.3</mybatis.version>
+    <mybatis-spring.version>2.0.3</mybatis-spring.version>
+  </properties>
 
-            <dependency>
-                <groupId>site.bitinit.pnd</groupId>
-                <artifactId>pnd-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <!-- JDBC libs -->
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.34</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.derby</groupId>
-                <artifactId>derby</artifactId>
-                <version>10.10.1.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-dbcp</groupId>
-                <artifactId>commons-dbcp</artifactId>
-                <version>1.4</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>27.0.1-jre</version>
-            </dependency>
-
-
-
-        </dependencies>
-    </dependencyManagement>
-
-    <!--<build>-->
-        <!--<plugins>-->
-            <!--<plugin>-->
-                <!--<groupId>org.springframework.boot</groupId>-->
-                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
-            <!--</plugin>-->
-        <!--</plugins>-->
-    <!--</build>-->
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>2.1.3.RELEASE</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.2.RELEASE</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>10.14.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>site.bitinit.pnd</groupId>
+        <artifactId>pnd-web</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
 </project>

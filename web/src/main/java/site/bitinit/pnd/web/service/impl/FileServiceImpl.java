@@ -1,255 +1,258 @@
 package site.bitinit.pnd.web.service.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
-import site.bitinit.pnd.common.exception.IllegalDataException;
-import site.bitinit.pnd.common.util.Assert;
-import site.bitinit.pnd.exception.SystemDealFailException;
-import site.bitinit.pnd.web.config.SystemConstants;
-import site.bitinit.pnd.web.controller.dto.FileDetailDto;
-import site.bitinit.pnd.web.dao.FileDao;
-import site.bitinit.pnd.web.dao.FileResourceDao;
-import site.bitinit.pnd.web.dao.ResourceDao;
-import site.bitinit.pnd.web.model.PndFile;
-import site.bitinit.pnd.web.model.PndResource;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import site.bitinit.pnd.web.config.FileType;
+import site.bitinit.pnd.web.config.PndProperties;
+import site.bitinit.pnd.web.controller.dto.FolderPathDto;
+import site.bitinit.pnd.web.controller.dto.ResponseDto;
+import site.bitinit.pnd.web.dao.FileMapper;
+import site.bitinit.pnd.web.dao.ResourceMapper;
+import site.bitinit.pnd.web.entity.File;
+import site.bitinit.pnd.web.entity.Resource;
+import site.bitinit.pnd.web.exception.DataFormatException;
+import site.bitinit.pnd.web.exception.DataNotFoundException;
 import site.bitinit.pnd.web.service.FileService;
+import site.bitinit.pnd.web.util.FileUtils;
 
-import java.util.List;
-import java.util.Objects;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
- * @author: john
- * @date: 2019/4/3
+ * 在多文件和文件夹 删除/复制 数据时用的是悲观锁，可能会出现死锁
+ * 但考虑到个人部署使用，所以系统并发量并不大，出现死锁的概率很低
+ * @author john
+ * @date 2020-01-11
  */
+@Slf4j
 @Service
 public class FileServiceImpl implements FileService {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    private final FileMapper fileMapper;
+    private final ResourceMapper resourceMapper;
+    private final PndProperties pndProperties;
 
     @Autowired
-    private FileDao fileDao;
-    @Autowired
-    private ResourceDao resourceDao;
-    @Autowired
-    private FileResourceDao fileResourceDao;
-    @Autowired
-    private TransactionTemplate transactionTemplate;
+    public FileServiceImpl(PndProperties pndProperties,
+                           FileMapper fileMapper,
+                           ResourceMapper resourceMapper) {
+        this.fileMapper = fileMapper;
+        this.pndProperties = pndProperties;
+        this.resourceMapper = resourceMapper;
+    }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public List<FileDetailDto> getFileList(long parentId) {
-        return fileResourceDao.findFileDetailByParentId(parentId);
+    public ResponseDto findByParentId(Long parentId) {
+        List<File> files = fileMapper.findByParentId(parentId, false);
+        List<FolderPathDto> folderPaths = getFolderTree(parentId);
+        return ResponseDto.success(files, folderPaths);
     }
 
     @Override
-    public void createFolder(long parentId, String folderName) {
-        Assert.notEmpty(folderName, "文件夹名不能为空");
-        fileDao.createFolder(parentId, folderName);
+    public ResponseDto findByFileId(Long fileId) {
+        File file = fileMapper.findById(fileId);
+        if (Objects.isNull(file)) {
+            throw new DataNotFoundException("没有该文件");
+        }
+        return ResponseDto.success(file);
     }
 
     @Override
-    public void createFile(PndFile file) {
-        Assert.notNull(file);
-        Assert.notEmpty(file.getName(), "文件名不能为空");
-        Assert.notNull(file.getResourceId(), "资源id不能为空");
-
-        file.setType(SystemConstants.getFileType(file.getName()).toString());
-        transactionTemplate.execute((transactionStatus) -> {
-            fileDao.save(file);
-            updateResourceLink(file.getResourceId(), originVal -> originVal + 1);
-            return Boolean.TRUE;
-        });
+    public void createFile(File file) {
+        FileUtils.checkFileName(file.getFileName());
+        FileUtils.checkFileType(file.getType());
+        File parentFile = findById(file.getParentId());
+        if (Objects.isNull(parentFile) || !FileUtils.equals(parentFile.getType(), FileType.FOLDER)){
+            throw new DataFormatException("parentId不存在或parentId不是文件夹");
+        }
+        fileMapper.save(file);
     }
 
     @Override
-    public void renameFile(long id, String fileName) {
-        Assert.notEmpty(fileName, "新文件名不能为空");
-        fileDao.renameFile(id, fileName);
+    public void renameFile(String fileName, Long id) {
+        FileUtils.checkFileName(fileName);
+
+        File updateFile = File.builder()
+                .id(id).fileName(fileName)
+                .build();
+        fileMapper.update(updateFile);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deleteFile(long id) {
-        PndFile file = fileDao.findById(id);
-        if (Objects.isNull(file)){
-            throw new IllegalDataException("不存在 id=" + id + " 的数据");
+    public void moveFiles(List<Long> ids, Long targetId) {
+        File file = findById(targetId);
+        if (Objects.isNull(file) || !FileType.FOLDER.toString().equals(file.getType())) {
+            throw new DataNotFoundException("没有该文件夹");
         }
-        if (SystemConstants.FileType.FOLDER.toString().equals(file.getType())){
-            deleteFolder(file);
-        } else {
-            deleteCommonFile(file);
-        }
+
+        fileMapper.updateParentId(ids, targetId, new Date());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public List<PndFile> getSubfolder(long id) {
-        return fileDao.findSubfolderByParentId(id);
-    }
-
-    @Override
-    public void moveFile(long id, long targetId) {
-        if (id == targetId){
-            throw new IllegalDataException("源文件与目标文件不能一样");
-        }
-        PndFile targetFile = fileDao.findById(targetId);
-        if (Objects.isNull(targetFile) && targetId != 0){
-            throw new IllegalDataException("目标文件夹不存在");
-        }
-        targetFile = targetId != 0? targetFile: PndFile.ROOT_PND_FILE;
-
-        if (isChild(id, targetFile)){
-            throw new IllegalDataException("目标文件夹不能为源文件夹的子目录");
-        } else {
-            fileDao.moveFile(id, targetId);
-        }
-    }
-
-    @Override
-    public void copyFile(long id, Long[] targetIds) {
-        if (Objects.isNull(targetIds) || targetIds.length == 0){
-            throw new IllegalDataException("目标文件夹不能为空");
-        }
-
-        PndFile file = fileDao.findById(id);
-        if (Objects.isNull(file) || SystemConstants.FileType.FOLDER.toString().equals(file.getType())){
-            throw new IllegalDataException("源文件不存在或源文件不能是文件夹");
-        }
-        transactionTemplate.execute((transactionStatus) -> {
-            int num = 0;
-            for (Long targetId: targetIds) {
-                PndFile targetFile = fileDao.findById(targetId);
-                // 可能复制到根目录
-                targetFile = targetId == 0? PndFile.ROOT_PND_FILE: targetFile;
-                if (Objects.isNull(targetFile) || !SystemConstants.FileType.FOLDER.toString().equals(targetFile.getType())){
-                    continue;
+    public void copyFiles(List<Long> fileIds, List<Long> targetIds) {
+        for (Long targetId: targetIds) {
+            File targetFile = findById(targetId);
+            if (Objects.isNull(targetFile) ||
+                    !FileType.FOLDER.toString().equals(targetFile.getType())) {
+                throw new DataFormatException("无效的目标文件夹");
+            }
+            for (Long fileId: fileIds) {
+                File file = fileMapper.findById(fileId);
+                if (Objects.isNull(file)) {
+                    throw new DataFormatException("无效的文件");
+                } else if (FileType.FOLDER.toString().equals(file.getType())) {
+                    copyFolder(file, targetFile);
+                } else {
+                    copyCommonFile(file, targetFile);
                 }
-
-                PndFile copyFile = new PndFile();
-                copyFile.setName(file.getName());
-                copyFile.setParentId(targetId);
-                copyFile.setType(file.getType());
-                copyFile.setResourceId(file.getResourceId());
-                fileDao.save(copyFile);
-                num++;
             }
-
-            final int finalNum = num;
-            updateResourceLink(file.getResourceId(), originVal -> originVal + finalNum);
-            return Boolean.TRUE;
-        });
+        }
     }
 
-    /**
-     * targetFile 是否是 id 的子节点
-     * @param id
-     * @param targetFile
-     * @return
-     */
-    private boolean isChild(long id, PndFile targetFile){
-        if (targetFile.getParentId() == 0){
-            return false;
-        }
-        if (targetFile.getParentId() == id){
-            return true;
-        }
-
-        return isChild(id, fileDao.findById(targetFile.getParentId()));
-    }
-
-    /**
-     * 删除文件夹及其子文件
-     * @param file
-     */
-    private void deleteFolder(PndFile file){
-        transactionTemplate.execute(new TransactionCallback<Boolean>() {
-            @Override
-            public Boolean doInTransaction(TransactionStatus transactionStatus) {
-                deleteFolder0(file);
-                return Boolean.TRUE;
-            }
-        });
-    }
-
-    private void deleteFolder0(PndFile file){
-        if (!SystemConstants.FileType.FOLDER.toString().equals(file.getType())){
-            throw new IllegalArgumentException("文件类型应该为文件夹");
-        }
-
-        List<PndFile> fileList = fileDao.findByParentIdSortByGmtModified(file.getId());
-        for (PndFile f :
-                fileList) {
-            if (!SystemConstants.FileType.FOLDER.toString().equals(f.getType())) {
-                deleteCommonFile0(f);
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deleteFiles(List<Long> ids) {
+        for (Long id: ids) {
+            File file = fileMapper.findById(id);
+            if (!file.getType().equals(FileType.FOLDER.toString())){
+                deleteCommonFile(file);
             } else {
-                deleteFolder0(f);
+                deleteFolder(file);
             }
         }
-        fileDao.deleteFile(file.getId());
     }
 
-    /**
-     * 删除除了文件夹以外的其他文件
-     * @param file
-     */
-    private void deleteCommonFile(PndFile file){
-        transactionTemplate.execute((transactionStatus) -> {
-            deleteCommonFile0(file);
-            return Boolean.TRUE;
-        });
+    @Override
+    public ResourceWrapper loadResource(Long fileId) {
+        site.bitinit.pnd.web.entity.File file = findById(fileId);
+        if (Objects.isNull(file) || Objects.isNull(file.getResourceId())) {
+            throw new DataNotFoundException("没有该文件");
+        }
+        Resource pndResource = resourceMapper.findById(file.getResourceId());
+        if (Objects.isNull(pndResource)){
+            throw new DataNotFoundException("没有该文件");
+        }
+
+        try {
+            Path filePath = new java.io.File(pndProperties.getBasicResourcePath() + java.io.File.separator +
+                    pndResource.getPath()).toPath();
+            org.springframework.core.io.Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists()){
+                return new ResourceWrapper(resource, file);
+            } else {
+                throw new DataNotFoundException("没有该文件");
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            throw new DataNotFoundException("没有该文件");
+        }
     }
 
-    /**
-     * 删除普通文件
-     * @param file
-     */
-    private void deleteCommonFile0(PndFile file){
-        if (Objects.isNull(file.getResourceId())){
-            logger.error("索引资源失败 fileId-{}", file.getId());
+    private List<FolderPathDto> getFolderTree(Long parentId){
+        List<FolderPathDto> result = new ArrayList<>();
+        buildFolderTree(parentId, result);
+        Collections.reverse(result);
+        return result;
+    }
+
+    private void buildFolderTree(Long parentId, List<FolderPathDto> result){
+        if (parentId.equals(File.ROOT_FILE.getId())){
+            result.add(new FolderPathDto(parentId, File.ROOT_FILE.getFileName()));
             return;
         }
 
-        fileDao.deleteFile(file.getId());
-        updateResourceLink(file.getResourceId(), originVal -> originVal - 1);
-    }
-
-    private void updateResourceLink(long id, ResourceLinkOperation rlo){
-        if (Objects.isNull(rlo)){
-            throw new IllegalArgumentException("rlo can't be null");
-        }
-        int i = 0;
-        while (i < HANDLING_TIMES) {
-            PndResource resource = resourceDao.findById(id);
-            if (Objects.isNull(resource)){
-                logger.error("索引资源失败 resourceId-{}", id);
-                return;
-            }
-            int expectedVal = resource.getLink();
-            if (expectedVal < 0){
-                throw new RuntimeException("系统存在脏数据");
-            }
-            int affectedRows = resourceDao.updateIndex(resource.getId(), expectedVal, rlo.operate(expectedVal));
-            if (affectedRows > 0){
-                break;
-            }
-            i++;
-        }
-        if (i >= HANDLING_TIMES){
-            throw new SystemDealFailException("资源操作失败");
+        File file = findById(parentId);
+        if (Objects.nonNull(file) && FileUtils.equals(file.getType(), FileType.FOLDER)){
+            result.add(new FolderPathDto(file.getId(), file.getFileName()));
+            buildFolderTree(file.getParentId(), result);
+        } else {
+            throw new DataNotFoundException("不存在该文件夹");
         }
     }
 
-    private static final int HANDLING_TIMES = 10;
+    private void deleteFolder(File file) {
+        List<File> children = fileMapper.findByParentIdForUpdate(file.getId());
+        for (File f: children) {
+            if (FileType.FOLDER.toString().equals(f.getType())) {
+                deleteFolder(f);
+            } else {
+                deleteCommonFile(f);
+            }
+        }
+        fileMapper.deleteByIds(Collections.singletonList(file.getId()));
+    }
 
-    @FunctionalInterface
-    interface ResourceLinkOperation{
-        /**
-         * 资源操作
-         * @param originVal
-         * @return
-         */
-        long operate(long originVal);
+    @Transactional(propagation = Propagation.REQUIRES_NEW,
+            rollbackFor = Exception.class)
+    public void deleteCommonFile(File file){
+        Resource resource = resourceMapper.findByIdForUpdate(file.getResourceId());
+        if (Objects.isNull(resource)) {
+            throw new IllegalStateException("数据库数据异常");
+        }
+        if (resource.getLink() <= 1) {
+            java.io.File resourceFile = new java.io.File(pndProperties.getBasicResourcePath() +
+                    java.io.File.separator + resource.getPath());
+            if (resourceFile.exists() && resourceFile.delete()) {
+                resourceMapper.delete(resource.getId());
+            } else {
+                throw new IllegalStateException("文件删除失败");
+            }
+        } else {
+            resourceMapper.updateLink(resource.getId(), resource.getLink() - 1);
+        }
+        fileMapper.deleteByIds(Collections.singletonList(file.getId()));
+    }
+
+    private void copyFolder(File file, File parentFile) {
+        if (parentFile.getParentId().equals(file.getId())) {
+            throw new DataFormatException("不能复制到子文件夹中");
+        }
+        File newFile = File.builder()
+                .type(FileType.FOLDER.toString()).parentId(parentFile.getId())
+                .fileName(file.getFileName())
+                .build();
+        fileMapper.save(newFile);
+
+        List<File> children = fileMapper.findByParentId(file.getId(), true);
+        for (File f: children) {
+            if (FileType.FOLDER.toString().equals(f.getType())) {
+                copyFolder(f, newFile);
+            } else {
+                copyCommonFile(f, newFile);
+            }
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW,
+            rollbackFor = Exception.class)
+    public void copyCommonFile(File file, File parentFile) {
+        Resource resource = resourceMapper.findByIdForUpdate(file.getResourceId());
+        if (Objects.isNull(resource)) {
+            throw new IllegalStateException("数据库数据异常");
+        }
+        resourceMapper.updateLink(resource.getId(), resource.getLink() + 1);
+        File newFile = File.builder()
+                .fileName(file.getFileName()).parentId(parentFile.getId())
+                .type(file.getType()).resourceId(file.getResourceId())
+                .build();
+        fileMapper.save(newFile);
+    }
+
+    private File findById(Long id){
+        if (id == 0){
+            return File.ROOT_FILE;
+        } else {
+            return fileMapper.findById(id);
+        }
     }
 }

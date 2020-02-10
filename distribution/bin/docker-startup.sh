@@ -2,7 +2,7 @@
 
 PND_HOME=`cd $(dirname $0)/..; pwd`
 
-JAVA_OPTS="${JAVA_OPTS} -Dpnd.home=${PND_HOME}"
+JAVA_OPTS="${JAVA_OPTS} -Dpnd.homeDir=${PND_HOME}"
 
 #############################################################
 # Mysql configuration
